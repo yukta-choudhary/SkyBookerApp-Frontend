@@ -1,0 +1,109 @@
+<div class="auth-shell">
+  <div class="auth-card">
+    <section class="visual-panel">
+      <div class="visual-overlay"></div>
+      <div class="window-frame">
+        <div class="sky-glow"></div>
+      </div>
+
+      <div class="brand-badge"><svg fill="#FEFEFF" viewBox="-2.5 0 19 19" xmlns="http://www.w3.org/2000/svg" class="cf-icon-svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M12.382 5.304 10.096 7.59l.006.02L11.838 14a.908.908 0 0 1-.211.794l-.573.573a.339.339 0 0 1-.566-.08l-2.348-4.25-.745-.746-1.97 1.97a3.311 3.311 0 0 1-.75.504l.44 1.447a.875.875 0 0 1-.199.79l-.175.176a.477.477 0 0 1-.672 0l-1.04-1.039-.018-.02-.788-.786-.02-.02-1.038-1.039a.477.477 0 0 1 0-.672l.176-.176a.875.875 0 0 1 .79-.197l1.447.438a3.322 3.322 0 0 1 .504-.75l1.97-1.97-.746-.744-4.25-2.348a.339.339 0 0 1-.08-.566l.573-.573a.909.909 0 0 1 .794-.211l6.39 1.736.02.006 2.286-2.286c.37-.372 1.621-1.02 1.993-.65.37.372-.279 1.622-.65 1.993z"></path></g></svg> SkyBooker</div>
+
+      <div class="visual-content">
+        <p class="eyebrow">Welcome aboard</p>
+        <h1>
+          Sign in to continue your
+          <span>seamless travel journey</span>
+        </h1>
+        <p class="visual-text">
+          Book flights, manage trips, and travel with a modern airline experience
+          built for comfort and clarity.
+        </p>
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <div class="form-wrap">
+        <div class="mini-logo"><svg fill="#5A32FF" viewBox="-2.5 0 19 19" xmlns="http://www.w3.org/2000/svg" class="cf-icon-svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M12.382 5.304 10.096 7.59l.006.02L11.838 14a.908.908 0 0 1-.211.794l-.573.573a.339.339 0 0 1-.566-.08l-2.348-4.25-.745-.746-1.97 1.97a3.311 3.311 0 0 1-.75.504l.44 1.447a.875.875 0 0 1-.199.79l-.175.176a.477.477 0 0 1-.672 0l-1.04-1.039-.018-.02-.788-.786-.02-.02-1.038-1.039a.477.477 0 0 1 0-.672l.176-.176a.875.875 0 0 1 .79-.197l1.447.438a3.322 3.322 0 0 1 .504-.75l1.97-1.97-.746-.744-4.25-2.348a.339.339 0 0 1-.08-.566l.573-.573a.909.909 0 0 1 .794-.211l6.39 1.736.02.006 2.286-2.286c.37-.372 1.621-1.02 1.993-.65.37.372-.279 1.622-.65 1.993z"></path></g></svg></div>
+        <h2>Sign in</h2>
+        <p class="subtitle">
+          Access your bookings, profile, and upcoming journeys.
+        </p>
+
+        <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+          <div class="field-group">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              [(ngModel)]="email"
+              placeholder="Enter your email"
+              required
+              email
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input
+                id="password"
+                name="password"
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="password"
+                placeholder="Enter your password"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-btn"
+                (click)="togglePassword()"
+                aria-label="Toggle password visibility"
+              >
+                {{ showPassword ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="options-row">
+            <label class="checkbox-wrap">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                [(ngModel)]="rememberMe"
+              />
+              <span>Remember me</span>
+            </label>
+
+            <a routerLink="/register" class="link-light">Forgot password?</a>
+          </div>
+
+          <p class="message error" *ngIf="error()">{{ error() }}</p>
+          <p class="message success" *ngIf="success()">{{ success() }}</p>
+
+          <button
+            type="submit"
+            class="primary-btn"
+            [disabled]="loading()"
+          >
+            <span *ngIf="!loading()">Sign In</span>
+            <span *ngIf="loading()">Signing in...</span>
+          </button>
+        </form>
+
+        <div class="divider">
+          <span>or continue with</span>
+        </div>
+
+        <div class="social-row">
+          <button type="button" class="social-btn">Google</button>
+        </div>
+
+        <p class="switch-text">
+          Don’t have an account?
+          <a routerLink="/register">Create one</a>
+        </p>
+      </div>
+    </section>
+  </div>
+</div>
