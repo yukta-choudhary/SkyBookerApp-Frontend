@@ -1,0 +1,239 @@
+<app-navbar></app-navbar>
+
+<main class="search-page">
+  <div class="container">
+
+    <!-- Header Bar -->
+    <div class="search-header">
+      <div class="route-info">
+        <span class="route-text">
+          {{ origin }}
+          <span class="material-symbols-rounded">arrow_forward</span>
+          {{ destination }}
+        </span>
+        <span class="search-meta">
+          <span class="material-symbols-rounded">calendar_today</span>
+          {{ date }}
+          @if (tripType === 'ROUND_TRIP') { — {{ returnDate }} }
+          &nbsp;·&nbsp;
+          <span class="material-symbols-rounded">person</span>
+          {{ passengers }} Passenger{{ passengers > 1 ? 's' : '' }}
+        </span>
+      </div>
+      <a routerLink="/" class="modify-btn">
+        <span class="material-symbols-rounded">edit</span>
+        Modify Search
+      </a>
+    </div>
+
+    <!-- Round Trip Tabs -->
+    @if (tripType === 'ROUND_TRIP') {
+      <div class="rt-tabs">
+        <button
+          class="rt-tab"
+          [class.active]="activeTab() === 'outbound'"
+          (click)="activeTab.set('outbound')"
+          type="button"
+        >
+          <span>{{ origin }}</span>
+          <span class="material-symbols-rounded">arrow_forward</span>
+          <span>{{ destination }}</span>
+        </button>
+        <button
+          class="rt-tab"
+          [class.active]="activeTab() === 'return'"
+          (click)="activeTab.set('return')"
+          type="button"
+        >
+          <span>{{ destination }}</span>
+          <span class="material-symbols-rounded">arrow_forward</span>
+          <span>{{ origin }}</span>
+        </button>
+      </div>
+    }
+
+    <div class="results-layout">
+
+      <!-- Filter Sidebar -->
+      <aside class="filter-sidebar" [class.open]="showFilters()">
+        <div class="filter-header">
+          <h3>
+            <span class="material-symbols-rounded">tune</span>
+            Filters
+          </h3>
+          <button class="filter-close" (click)="showFilters.set(false)" type="button">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <div class="filter-section">
+          <h4>Sort By</h4>
+          <div class="filter-opts">
+            <label class="filter-opt">
+              <input type="radio" name="sort" value="price" [checked]="sortBy() === 'price'" (change)="sortBy.set('price')" />
+              <span>Lowest Fare First</span>
+            </label>
+            <label class="filter-opt">
+              <input type="radio" name="sort" value="departure" [checked]="sortBy() === 'departure'" (change)="sortBy.set('departure')" />
+              <span>Earliest Departure</span>
+            </label>
+            <label class="filter-opt">
+              <input type="radio" name="sort" value="duration" [checked]="sortBy() === 'duration'" (change)="sortBy.set('duration')" />
+              <span>Shortest Duration</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <h4>Flight Status</h4>
+          <div class="filter-opts">
+            @for (status of ['','ON_TIME','DELAYED','CANCELLED']; track status) {
+              <label class="filter-opt">
+                <input type="radio" name="fstatus" [value]="status" [checked]="filterStatus() === status" (change)="setFilterStatus(status)" />
+                <span>{{ status || 'All' }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      </aside>
+
+      <!-- Flight List -->
+      <section class="flight-list">
+
+        <!-- Controls -->
+        <div class="list-controls">
+          <span class="results-count">
+            @if (!loading()) {
+              {{ filteredFlights().length }} flight{{ filteredFlights().length !== 1 ? 's' : '' }} found
+            }
+          </span>
+          <button class="filter-toggle-btn" (click)="showFilters.set(!showFilters())" type="button">
+            <span class="material-symbols-rounded">tune</span>
+            Filters
+          </button>
+        </div>
+
+        <!-- Loading -->
+        @if (loading()) {
+          <div class="loading-list">
+            @for (i of [1,2,3]; track i) {
+              <div class="flight-skeleton">
+                <div class="skeleton sk-airline"></div>
+                <div class="skeleton sk-time"></div>
+                <div class="skeleton sk-price"></div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Error -->
+        @if (error() && !loading()) {
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">flight_off</span>
+            <h3>{{ error() }}</h3>
+            <a routerLink="/" class="btn-primary-sm">Search Again</a>
+          </div>
+        }
+
+        <!-- Empty -->
+        @if (!loading() && !error() && filteredFlights().length === 0) {
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">search_off</span>
+            <h3>No flights found</h3>
+            <p>Try different dates or nearby airports.</p>
+            <a routerLink="/" class="btn-primary-sm">Modify Search</a>
+          </div>
+        }
+
+        <!-- Flight Cards -->
+        @for (flight of filteredFlights(); track flight.flightId) {
+          <div class="flight-card animate-fade-up">
+
+            <div class="flight-main">
+              <!-- Airline -->
+              <div class="airline-col">
+                <div class="airline-logo-wrap">
+                  @if (getAirline(flight.airlineId)?.logoUrl) {
+                    <img [src]="getAirline(flight.airlineId)?.logoUrl" [alt]="getAirline(flight.airlineId)?.name" class="airline-logo" />
+                  } @else {
+                    <span class="material-symbols-rounded airline-placeholder">airlines</span>
+                  }
+                </div>
+                <div>
+                  <span class="airline-name">{{ getAirline(flight.airlineId)?.name || 'Airline' }}</span>
+                  <span class="flight-number">{{ flight.flightNumber }}</span>
+                </div>
+              </div>
+
+              <!-- Times -->
+              <div class="times-col">
+                <div class="time-block">
+                  <span class="time-val">{{ formatTime(flight.departureTime) }}</span>
+                  <span class="iata-code">{{ flight.originAirportCode }}</span>
+                  <span class="time-date">{{ formatDate(flight.departureTime) }}</span>
+                </div>
+
+                <div class="duration-col">
+                  <span class="duration-text">{{ formatDuration(flight.durationMinutes) }}</span>
+                  <div class="duration-line">
+                    <div class="dur-dot"></div>
+                    <div class="dur-track"></div>
+                    <span class="material-symbols-rounded dur-plane">flight</span>
+                  </div>
+                  <span class="stops-text">Non-stop</span>
+                </div>
+
+                <div class="time-block text-right">
+                  <span class="time-val">{{ formatTime(flight.arrivalTime) }}</span>
+                  <span class="iata-code">{{ flight.destinationAirportCode }}</span>
+                  <span class="time-date">{{ formatDate(flight.arrivalTime) }}</span>
+                </div>
+              </div>
+
+              <!-- Status + Seats -->
+              <div class="status-col">
+                <span class="status-pill" [ngClass]="getStatusClass(flight.status)">
+                  {{ flight.status.replace('_', ' ') }}
+                </span>
+                <span class="seats-left" [class.low]="flight.availableSeats < 10">
+                  <span class="material-symbols-rounded" style="font-size:14px">airline_seat_recline_normal</span>
+                  {{ flight.availableSeats }} seats
+                </span>
+                <span class="aircraft-type">{{ flight.aircraftType }}</span>
+              </div>
+
+              <!-- Price + CTA -->
+              <div class="price-col">
+                <div class="price-tag">
+                  <span class="price-label">Starts at</span>
+                  <span class="price-val">₹{{ flight.basePrice.toLocaleString('en-IN') }}</span>
+                  <span class="price-sub">per person</span>
+                </div>
+                <button
+                  class="select-btn"
+                  type="button"
+                  (click)="selectFlight(flight)"
+                  [disabled]="flight.availableSeats === 0 || flight.status === 'CANCELLED'"
+                >
+                  @if (flight.availableSeats === 0) {
+                    Sold Out
+                  } @else if (flight.status === 'CANCELLED') {
+                    Cancelled
+                  } @else {
+                    Select
+                    <span class="material-symbols-rounded">arrow_forward</span>
+                  }
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        }
+
+      </section>
+    </div>
+  </div>
+</main>
+
+<app-footer></app-footer>

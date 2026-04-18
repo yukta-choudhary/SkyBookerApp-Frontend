@@ -1,0 +1,182 @@
+<app-navbar></app-navbar>
+
+<main class="bookings-page">
+  <div class="container">
+
+    <div class="page-header">
+      <div>
+        <h1>My Bookings</h1>
+        <p>View and manage all your flight bookings</p>
+      </div>
+      <a routerLink="/flights/search" class="search-btn-link">
+        <span class="material-symbols-rounded">add</span>
+        Book a Flight
+      </a>
+    </div>
+
+    <!-- Filter Chips -->
+    <div class="filter-chips">
+      @for (f of ['ALL','CONFIRMED','PENDING','CANCELLED','COMPLETED']; track f) {
+        <button
+          class="chip"
+          [class.active]="filterStatus() === f"
+          (click)="filterStatus.set(f)"
+          type="button"
+        >
+          {{ f === 'ALL' ? 'All Bookings' : f }}
+          @if (f === 'ALL') { ({{ bookings().length }}) }
+        </button>
+      }
+    </div>
+
+    <div class="bookings-layout" [class.has-detail]="selectedBooking()">
+
+      <!-- Bookings List -->
+      <section class="bookings-list">
+
+        @if (loading()) {
+          <div class="list-loading">
+            @for (i of [1,2,3]; track i) {
+              <div class="booking-skel skeleton"></div>
+            }
+          </div>
+        }
+
+        @if (!loading() && filteredBookings().length === 0) {
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">confirmation_number</span>
+            <h3>No bookings found</h3>
+            <p>Book your first flight to see it here</p>
+            <a routerLink="/flights/search" class="cta-link">Search Flights</a>
+          </div>
+        }
+
+        @for (booking of filteredBookings(); track booking.bookingId) {
+          <div
+            class="booking-row"
+            [class.selected]="selectedBooking()?.bookingId === booking.bookingId"
+            (click)="selectBooking(booking)"
+            role="button"
+          >
+            <div class="booking-row-left">
+              <div class="pnr-wrap">
+                <span class="pnr-label">PNR</span>
+                <span class="pnr-val">{{ booking.pnrCode }}</span>
+              </div>
+              <div class="booking-meta">
+                <span class="booking-date">
+                  <span class="material-symbols-rounded" style="font-size:14px">calendar_today</span>
+                  {{ formatDate(booking.departureTime) }}
+                </span>
+                <span class="trip-type">{{ booking.tripType.replace('_', ' ') }}</span>
+              </div>
+            </div>
+            <div class="booking-row-right">
+              <span class="{{ getStatusClass(booking.status) }} status-badge">{{ booking.status }}</span>
+              <span class="fare-val">₹{{ booking.totalFare.toLocaleString('en-IN') }}</span>
+              <span class="material-symbols-rounded arrow-chevron">chevron_right</span>
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- Booking Detail Panel -->
+      @if (selectedBooking()) {
+        <aside class="detail-panel animate-fade-up">
+          <div class="detail-header">
+            <h3>Booking Details</h3>
+            <button class="close-detail" (click)="closeDetail()">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+
+          <div class="detail-body">
+            <!-- PNR + Status -->
+            <div class="detail-top">
+              <div class="detail-pnr">
+                <span class="material-symbols-rounded" style="font-size:20px;color:#5b38ff">confirmation_number</span>
+                <span class="pnr-big">{{ selectedBooking()!.pnrCode }}</span>
+              </div>
+              <span class="{{ getStatusClass(selectedBooking()!.status) }} status-badge">{{ selectedBooking()!.status }}</span>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Trip Type</span>
+                <span class="info-val">{{ selectedBooking()!.tripType.replace('_', ' ') }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Departure</span>
+                <span class="info-val">{{ formatDateTime(selectedBooking()!.departureTime) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Base Fare</span>
+                <span class="info-val">₹{{ selectedBooking()!.baseFare.toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Taxes</span>
+                <span class="info-val">₹{{ selectedBooking()!.taxes.toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="info-item full">
+                <span class="info-label">Total Fare</span>
+                <span class="info-val total">₹{{ selectedBooking()!.totalFare.toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Meal Preference</span>
+                <span class="info-val">{{ selectedBooking()!.mealPreference || '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Extra Luggage</span>
+                <span class="info-val">{{ selectedBooking()!.luggageKg ? selectedBooking()!.luggageKg + ' kg' : '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Contact Email</span>
+                <span class="info-val">{{ selectedBooking()!.contactEmail }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Contact Phone</span>
+                <span class="info-val">{{ selectedBooking()!.contactPhone }}</span>
+              </div>
+              <div class="info-item full">
+                <span class="info-label">Booked At</span>
+                <span class="info-val">{{ formatDateTime(selectedBooking()!.bookedAt) }}</span>
+              </div>
+            </div>
+
+            @if (cancelSuccess()) {
+              <div class="detail-success">
+                <span class="material-symbols-rounded">check_circle</span>
+                {{ cancelSuccess() }}
+              </div>
+            }
+            @if (cancelError()) {
+              <div class="detail-error">{{ cancelError() }}</div>
+            }
+
+            <!-- Actions -->
+            @if (selectedBooking()!.status === 'CONFIRMED' || selectedBooking()!.status === 'PENDING') {
+              <button
+                class="cancel-btn"
+                [disabled]="cancelLoading()"
+                (click)="cancelBooking(selectedBooking()!.bookingId)"
+              >
+                @if (cancelLoading()) {
+                  <span class="btn-spinner-dark"></span>
+                  Cancelling...
+                } @else {
+                  <span class="material-symbols-rounded">cancel</span>
+                  Cancel Booking
+                }
+              </button>
+            }
+
+          </div>
+        </aside>
+      }
+
+    </div>
+  </div>
+</main>
+
+<app-footer></app-footer>

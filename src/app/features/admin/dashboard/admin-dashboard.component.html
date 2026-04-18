@@ -1,0 +1,380 @@
+<app-navbar></app-navbar>
+
+<main class="admin-main">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="admin-header">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>Full platform control — airlines, airports, users, payments, notifications</p>
+      </div>
+      <div class="header-user">
+        <div class="admin-avatar">{{ user()?.fullName?.charAt(0) | uppercase }}</div>
+        <div>
+          <span class="admin-name">{{ user()?.fullName }}</span>
+          <span class="admin-role-badge">Administrator</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      @for (tab of [['overview','dashboard','Overview'],['airlines','airlines','Airlines'],['airports','flight_takeoff','Airports'],['users','people','Users'],['broadcast','campaign','Broadcast']] ; track tab[0]) {
+        <button
+          class="admin-tab"
+          [class.active]="activeTab() === tab[0]"
+          (click)="setTab(tab[0])"
+          type="button"
+        >
+          <span class="material-symbols-rounded mat-icon-filled">{{ tab[1] }}</span>
+          {{ tab[2] }}
+        </button>
+      }
+    </div>
+
+    <!-- ============ OVERVIEW ============ -->
+    @if (activeTab() === 'overview') {
+      @if (loading()) {
+        <div class="full-loading"><div class="spinner"></div></div>
+      } @else {
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card revenue">
+            <div class="stat-icon-wrap">
+              <span class="material-symbols-rounded mat-icon-filled">payments</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Revenue</span>
+              <span class="stat-val">₹{{ totalRevenue().toLocaleString('en-IN') }}</span>
+              <span class="stat-sub">All-time earnings</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap blue">
+              <span class="material-symbols-rounded mat-icon-filled">person</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Passengers</span>
+              <span class="stat-val">{{ passengerCount }}</span>
+              <span class="stat-sub">Registered users</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap green">
+              <span class="material-symbols-rounded mat-icon-filled">airlines</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Active Airlines</span>
+              <span class="stat-val">{{ activeAirlinesCount }}</span>
+              <span class="stat-sub">of {{ airlines().length }} total</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap coral">
+              <span class="material-symbols-rounded mat-icon-filled">flight_takeoff</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Airports</span>
+              <span class="stat-val">{{ airports().length }}</span>
+              <span class="stat-sub">Active airports</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap yellow">
+              <span class="material-symbols-rounded mat-icon-filled">badge</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Staff Users</span>
+              <span class="stat-val">{{ staffCount }}</span>
+              <span class="stat-sub">Airline staff accounts</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap purple">
+              <span class="material-symbols-rounded mat-icon-filled">manage_accounts</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Users</span>
+              <span class="stat-val">{{ users().length }}</span>
+              <span class="stat-sub">All platform users</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-grid">
+          <button class="qa-tile" (click)="setTab('airlines')">
+            <span class="material-symbols-rounded mat-icon-filled">airlines</span>
+            Manage Airlines
+          </button>
+          <button class="qa-tile" (click)="setTab('airports')">
+            <span class="material-symbols-rounded mat-icon-filled">flight_takeoff</span>
+            Manage Airports
+          </button>
+          <button class="qa-tile" (click)="setTab('users')">
+            <span class="material-symbols-rounded mat-icon-filled">people</span>
+            View Users
+          </button>
+          <button class="qa-tile" (click)="setTab('broadcast')">
+            <span class="material-symbols-rounded mat-icon-filled">campaign</span>
+            Broadcast
+          </button>
+        </div>
+      }
+    }
+
+    <!-- ============ AIRLINES ============ -->
+    @if (activeTab() === 'airlines') {
+      <div class="tab-header">
+        <h2>Airlines</h2>
+        <button class="btn-primary" (click)="showAirlineModal.set(true)">
+          <span class="material-symbols-rounded">add</span>
+          Add Airline
+        </button>
+      </div>
+
+      <div class="table-wrap card-table">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Airline</th>
+              <th>IATA</th>
+              <th>Country</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (airline of airlines(); track airline.airlineId) {
+              <tr>
+                <td>
+                  <div class="airline-cell">
+                    @if (airline.logoUrl) {
+                      <img [src]="airline.logoUrl" [alt]="airline.name" class="airline-mini-logo" />
+                    } @else {
+                      <span class="material-symbols-rounded airline-placeholder-sm">airlines</span>
+                    }
+                    <span class="fw-bold">{{ airline.name }}</span>
+                  </div>
+                </td>
+                <td><span class="iata-tag">{{ airline.iataCode }}</span></td>
+                <td>{{ airline.country }}</td>
+                <td style="font-size:12px">{{ airline.contactEmail }}</td>
+                <td>
+                  <span class="status-pill-sm" [class.active-st]="airline.isActive" [class.inactive-st]="!airline.isActive">
+                    {{ airline.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    class="toggle-btn"
+                    [class.deactivate]="airline.isActive"
+                    [class.activate]="!airline.isActive"
+                    (click)="toggleAirline(airline)"
+                  >
+                    {{ airline.isActive ? 'Deactivate' : 'Activate' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ============ AIRPORTS ============ -->
+    @if (activeTab() === 'airports') {
+      <div class="tab-header">
+        <h2>Airports</h2>
+      </div>
+      <div class="table-wrap card-table">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Airport</th>
+              <th>IATA</th>
+              <th>City</th>
+              <th>Country</th>
+              <th>Timezone</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (airport of airports(); track airport.airportId) {
+              <tr>
+                <td class="fw-bold">{{ airport.name }}</td>
+                <td><span class="iata-tag">{{ airport.iataCode }}</span></td>
+                <td>{{ airport.city }}</td>
+                <td>{{ airport.country }}</td>
+                <td style="font-size:12px;color:#80798e">{{ airport.timezone }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ============ USERS ============ -->
+    @if (activeTab() === 'users') {
+      <div class="tab-header">
+        <h2>Users</h2>
+        <div class="user-filters">
+          <span class="pill-filter">All: {{ users().length }}</span>
+          <span class="pill-filter blue">Passengers: {{ passengerCount }}</span>
+          <span class="pill-filter green">Staff: {{ staffCount }}</span>
+        </div>
+      </div>
+      <div class="table-wrap card-table">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Provider</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of users(); track u.userId) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="mini-avatar">{{ u.fullName.charAt(0) | uppercase }}</div>
+                    <span class="fw-bold">{{ u.fullName }}</span>
+                  </div>
+                </td>
+                <td style="font-size:12.5px">{{ u.email }}</td>
+                <td style="font-size:12.5px">{{ u.phone }}</td>
+                <td>
+                  <span class="role-badge" [class.passenger]="u.role === 'PASSENGER'" [class.staff]="u.role === 'AIRLINE_STAFF'" [class.admin]="u.role === 'ADMIN'">
+                    {{ u.role.replace('_', ' ') }}
+                  </span>
+                </td>
+                <td style="font-size:12px;color:#80798e">{{ u.provider }}</td>
+                <td>
+                  <span class="status-pill-sm" [class.active-st]="u.active" [class.inactive-st]="!u.active">
+                    {{ u.active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ============ BROADCAST ============ -->
+    @if (activeTab() === 'broadcast') {
+      <div class="tab-header"><h2>Broadcast Notification</h2></div>
+      <div class="broadcast-card">
+        <div class="broadcast-icon">
+          <span class="material-symbols-rounded mat-icon-filled" style="font-size:48px;color:#5b38ff">campaign</span>
+        </div>
+        <div class="broadcast-form">
+          <div class="form-group">
+            <label class="form-label">Notification Title <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="broadcastTitle" placeholder="e.g. Flight Delay Update" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message <span class="req">*</span></label>
+            <textarea [(ngModel)]="broadcastMsg" placeholder="Enter your notification message..." rows="4" class="form-ctrl textarea"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Role (optional)</label>
+            <select [(ngModel)]="broadcastRole" class="form-ctrl select">
+              <option value="">All Users</option>
+              <option value="PASSENGER">Passengers Only</option>
+              <option value="AIRLINE_STAFF">Airline Staff Only</option>
+            </select>
+          </div>
+
+          @if (broadcastError()) {
+            <div class="alert-error">{{ broadcastError() }}</div>
+          }
+          @if (broadcastSuccess()) {
+            <div class="alert-success">
+              <span class="material-symbols-rounded">check_circle</span>
+              {{ broadcastSuccess() }}
+            </div>
+          }
+
+          <button class="send-btn" [disabled]="broadcastLoading()" (click)="sendBroadcast()">
+            @if (broadcastLoading()) {
+              <span class="btn-spinner"></span>
+              Sending...
+            } @else {
+              <span class="material-symbols-rounded">send</span>
+              Send Broadcast
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+  </div>
+</main>
+
+<!-- Add Airline Modal -->
+@if (showAirlineModal()) {
+  <div class="modal-overlay" (click)="showAirlineModal.set(false)">
+    <div class="modal-box wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Airline</h3>
+        <button class="modal-close" (click)="showAirlineModal.set(false)">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-two-col">
+          <div class="form-group">
+            <label class="form-label">Airline ID <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="airlineForm.airlineId" placeholder="e.g. AI" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Airline Name <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="airlineForm.name" placeholder="Air India" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">IATA Code</label>
+            <input type="text" [(ngModel)]="airlineForm.iataCode" placeholder="AI" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">ICAO Code</label>
+            <input type="text" [(ngModel)]="airlineForm.icaoCode" placeholder="AIC" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <input type="text" [(ngModel)]="airlineForm.country" placeholder="India" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Email</label>
+            <input type="email" [(ngModel)]="airlineForm.contactEmail" placeholder="contact@airline.com" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone</label>
+            <input type="tel" [(ngModel)]="airlineForm.contactPhone" placeholder="+91..." class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo URL</label>
+            <input type="url" [(ngModel)]="airlineForm.logoUrl" placeholder="https://..." class="form-ctrl" />
+          </div>
+        </div>
+        @if (airlineFormError()) {
+          <div class="alert-error">{{ airlineFormError() }}</div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="showAirlineModal.set(false)">Cancel</button>
+        <button class="btn-primary" (click)="saveAirline()" [disabled]="airlineFormLoading()">
+          @if (airlineFormLoading()) { <span class="btn-spinner"></span> Saving... }
+          @else { <span class="material-symbols-rounded">save</span> Save Airline }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer></app-footer>

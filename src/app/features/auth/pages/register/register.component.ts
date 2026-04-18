@@ -1,8 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { RegisterRequest, Role } from '../../../../core/models/index';
 
 @Component({
   selector: 'app-register',
@@ -15,12 +16,15 @@ export class RegisterComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  firstName = '';
-  lastName = '';
+  // Backend-aligned fields
+  fullName = '';
   email = '';
   phone = '';
   password = '';
   confirmPassword = '';
+  role: Role = 'PASSENGER';
+  passportNumber = '';
+  nationality = '';
   acceptTerms = false;
 
   showPassword = false;
@@ -30,18 +34,6 @@ export class RegisterComponent {
   error = signal('');
   success = signal('');
 
-  isFormInvalid = computed(() => {
-    return (
-      !this.firstName.trim() ||
-      !this.lastName.trim() ||
-      !this.email.trim() ||
-      !this.phone.trim() ||
-      !this.password.trim() ||
-      !this.confirmPassword.trim() ||
-      !this.acceptTerms
-    );
-  });
-
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
@@ -50,49 +42,72 @@ export class RegisterComponent {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  get isFormInvalid(): boolean {
+    return (
+      !this.fullName.trim() ||
+      !this.email.trim() ||
+      !this.phone.trim() ||
+      !this.password.trim() ||
+      !this.confirmPassword.trim() ||
+      !this.acceptTerms
+    );
+  }
+
   register(): void {
     this.error.set('');
     this.success.set('');
 
-    if (this.isFormInvalid()) {
-      this.error.set('Please fill all fields and accept the terms.');
+    if (this.isFormInvalid) {
+      this.error.set('Please fill in all required fields and accept the terms.');
       return;
     }
 
     if (this.password !== this.confirmPassword) {
-      this.error.set('Password and confirm password do not match.');
+      this.error.set('Passwords do not match.');
       return;
     }
 
-    if (this.password.length < 6) {
-      this.error.set('Password must be at least 6 characters long.');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email.trim())) {
+      this.error.set('Please enter a valid email address.');
+      return;
+    }
+
+    if (this.password.length < 8) {
+      this.error.set('Password must be at least 8 characters long.');
       return;
     }
 
     this.loading.set(true);
 
-    this.authService.register({
-      firstName: this.firstName.trim(),
-      lastName: this.lastName.trim(),
+    const payload: RegisterRequest = {
+      fullName: this.fullName.trim(),
       email: this.email.trim(),
-      phone: this.phone.trim(),
       password: this.password,
-      confirmPassword: this.confirmPassword
-    }).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.success.set('Account created successfully. Redirecting to login...');
+      phone: this.phone.trim(),
+      role: this.role,
+      passportNumber: this.passportNumber.trim() || undefined,
+      nationality: this.nationality.trim() || undefined
+    };
 
+    this.authService.register(payload).subscribe({
+      next: (res) => {
+        this.loading.set(false);
+        this.success.set('Account created! Redirecting...');
         setTimeout(() => {
-          this.router.navigateByUrl('/login');
-        }, 900);
+          if (res.role === 'PASSENGER') this.router.navigateByUrl('/passenger/dashboard');
+          else if (res.role === 'AIRLINE_STAFF') this.router.navigateByUrl('/staff/dashboard');
+          else this.router.navigateByUrl('/auth/login');
+        }, 800);
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(
-          err?.error?.message || 'Unable to create account right now. Please try again.'
-        );
+        this.error.set(err?.error?.message || 'Registration failed. Please try again.');
       }
     });
+  }
+
+  loginWithGoogle(): void {
+    window.location.href = `${window.location.origin}/oauth2/authorization/google`;
   }
 }

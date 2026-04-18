@@ -1,0 +1,260 @@
+<app-navbar></app-navbar>
+
+<main class="home-page">
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-glow g1"></div>
+      <div class="hero-glow g2"></div>
+      <div class="hero-glow g3"></div>
+    </div>
+
+    <div class="hero-content container">
+      <div class="hero-text">
+        <span class="hero-eyebrow">
+          <span class="material-symbols-rounded mat-icon-filled" style="font-size:16px">flight_takeoff</span>
+          Your journey starts here
+        </span>
+        <h1 class="hero-title">
+          Search. Book.<br />
+          <span class="hero-gradient-text">Fly Effortlessly.</span>
+        </h1>
+        <p class="hero-sub">
+          Discover thousands of flights, compare fares across classes,
+          and book your next adventure — all in one place.
+        </p>
+      </div>
+
+      <!-- ============ Search Widget ============ -->
+      <div class="search-widget">
+
+        <!-- Trip Type Tabs -->
+        <div class="trip-tabs">
+          <button
+            class="trip-tab"
+            [class.active]="tripType === 'ONE_WAY'"
+            (click)="tripType = 'ONE_WAY'"
+            type="button"
+          >
+            <span class="material-symbols-rounded">arrow_forward</span>
+            One Way
+          </button>
+          <button
+            class="trip-tab"
+            [class.active]="tripType === 'ROUND_TRIP'"
+            (click)="tripType = 'ROUND_TRIP'"
+            type="button"
+          >
+            <span class="material-symbols-rounded">swap_horiz</span>
+            Round Trip
+          </button>
+        </div>
+
+        <!-- Search Row -->
+        <div class="search-row">
+
+          <!-- From -->
+          <div class="search-field-wrap">
+            <div class="search-field" [class.active]="showOriginDropdown()">
+              <span class="field-icon material-symbols-rounded">flight_takeoff</span>
+              <div class="field-inner">
+                <label>From</label>
+                <input
+                  type="text"
+                  [(ngModel)]="origin"
+                  (input)="onOriginInput(origin)"
+                  placeholder="City or airport"
+                  autocomplete="off"
+                  id="home-origin"
+                />
+              </div>
+              @if (originCode) {
+                <span class="iata-badge">{{ originCode }}</span>
+              }
+            </div>
+
+            @if (showOriginDropdown() && originResults().length > 0) {
+              <div class="airport-dropdown animate-slide-down">
+                @if (originLoading()) {
+                  <div class="dropdown-loading">
+                    <div class="spinner-sm"></div>
+                  </div>
+                }
+                @for (airport of originResults(); track airport.airportId) {
+                  <button class="airport-option" type="button" (click)="selectOrigin(airport)">
+                    <span class="material-symbols-rounded">location_on</span>
+                    <div class="airport-info">
+                      <span class="airport-city">{{ airport.city }}</span>
+                      <span class="airport-name">{{ airport.name }}</span>
+                    </div>
+                    <span class="airport-iata">{{ airport.iataCode }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Swap Button -->
+          <button class="swap-btn" type="button" (click)="swapRoutes()" title="Swap airports">
+            <span class="material-symbols-rounded">swap_horiz</span>
+          </button>
+
+          <!-- To -->
+          <div class="search-field-wrap">
+            <div class="search-field" [class.active]="showDestDropdown()">
+              <span class="field-icon material-symbols-rounded">flight_land</span>
+              <div class="field-inner">
+                <label>To</label>
+                <input
+                  type="text"
+                  [(ngModel)]="destination"
+                  (input)="onDestInput(destination)"
+                  placeholder="City or airport"
+                  autocomplete="off"
+                  id="home-dest"
+                />
+              </div>
+              @if (destinationCode) {
+                <span class="iata-badge">{{ destinationCode }}</span>
+              }
+            </div>
+
+            @if (showDestDropdown() && destinationResults().length > 0) {
+              <div class="airport-dropdown animate-slide-down">
+                @for (airport of destinationResults(); track airport.airportId) {
+                  <button class="airport-option" type="button" (click)="selectDest(airport)">
+                    <span class="material-symbols-rounded">location_on</span>
+                    <div class="airport-info">
+                      <span class="airport-city">{{ airport.city }}</span>
+                      <span class="airport-name">{{ airport.name }}</span>
+                    </div>
+                    <span class="airport-iata">{{ airport.iataCode }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Departure Date -->
+          <div class="search-field date-field">
+            <span class="field-icon material-symbols-rounded">calendar_today</span>
+            <div class="field-inner">
+              <label>Departure</label>
+              <input
+                type="date"
+                [(ngModel)]="departureDate"
+                [min]="today"
+                id="home-departure"
+              />
+            </div>
+          </div>
+
+          <!-- Return Date (only for round trip) -->
+          @if (tripType === 'ROUND_TRIP') {
+            <div class="search-field date-field">
+              <span class="field-icon material-symbols-rounded">event</span>
+              <div class="field-inner">
+                <label>Return</label>
+                <input
+                  type="date"
+                  [(ngModel)]="returnDate"
+                  [min]="returnDateMin"
+                  id="home-return"
+                />
+              </div>
+            </div>
+          }
+
+          <!-- Passengers -->
+          <div class="search-field-wrap">
+            <div
+              class="search-field"
+              [class.active]="showPassengerDropdown()"
+              (click)="showPassengerDropdown.set(!showPassengerDropdown())"
+              style="cursor:pointer"
+            >
+              <span class="field-icon material-symbols-rounded">person</span>
+              <div class="field-inner">
+                <label>Travellers</label>
+                <span class="passenger-display">{{ passengers }} Passenger{{ passengers > 1 ? 's' : '' }}</span>
+              </div>
+              <span class="material-symbols-rounded expand-icon">{{ showPassengerDropdown() ? 'expand_less' : 'expand_more' }}</span>
+            </div>
+
+            @if (showPassengerDropdown()) {
+              <div class="passenger-dropdown animate-slide-down">
+                <div class="passenger-row">
+                  <div>
+                    <span class="pax-label">Adults</span>
+                    <span class="pax-sub">12 years &amp; above</span>
+                  </div>
+                  <div class="counter">
+                    <button type="button" class="counter-btn" (click)="adjustPassengers(-1)" [disabled]="passengers <= 1">
+                      <span class="material-symbols-rounded">remove</span>
+                    </button>
+                    <span class="counter-val">{{ passengers }}</span>
+                    <button type="button" class="counter-btn" (click)="adjustPassengers(1)" [disabled]="passengers >= 9">
+                      <span class="material-symbols-rounded">add</span>
+                    </button>
+                  </div>
+                </div>
+                <button class="pax-done" type="button" (click)="showPassengerDropdown.set(false)">Done</button>
+              </div>
+            }
+          </div>
+
+          <!-- Search Button -->
+          <button class="search-btn" type="button" (click)="search()">
+            <span class="material-symbols-rounded">search</span>
+            Search
+          </button>
+
+        </div>
+
+        @if (searchError()) {
+          <div class="search-error">
+            <span class="material-symbols-rounded">error</span>
+            {{ searchError() }}
+          </div>
+        }
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Strip -->
+  <section class="features-strip container">
+    <div class="feature-card">
+      <span class="material-symbols-rounded mat-icon-filled feat-icon">verified</span>
+      <div>
+        <h3>Instant Confirmation</h3>
+        <p>PNR generated the moment your payment is processed</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <span class="material-symbols-rounded mat-icon-filled feat-icon">airline_seat_recline_extra</span>
+      <div>
+        <h3>Seat Selection</h3>
+        <p>Choose your preferred seat with our interactive seat map</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <span class="material-symbols-rounded mat-icon-filled feat-icon">notifications_active</span>
+      <div>
+        <h3>Real-Time Alerts</h3>
+        <p>Flight status updates, gate changes, and check-in reminders</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <span class="material-symbols-rounded mat-icon-filled feat-icon">lock</span>
+      <div>
+        <h3>Secure Payments</h3>
+        <p>Razorpay-powered — card, UPI, net banking &amp; wallet</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<app-footer></app-footer>

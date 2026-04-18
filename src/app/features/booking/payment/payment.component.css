@@ -1,0 +1,30 @@
+:host{display:flex;flex-direction:column;min-height:100vh}
+.pay-page{flex:1;padding:28px 0 56px;background:#f4f2fa}
+.pay-container{max-width:880px;margin:0 auto;padding:0 24px}
+.steps-bar{display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:24px}
+.step{color:#9a92aa;font-weight:600}
+.step.active{color:#5b38ff;font-weight:700}
+.step.done{color:#22c55e;font-weight:700}
+.step-sep{font-size:16px;color:#cabdff}
+h1{font-size:1.4rem;font-weight:800;color:#17141f;margin-bottom:20px}
+.p-loading{display:flex;justify-content:center;padding:60px}
+.spinner{width:30px;height:30px;border:3px solid #e3dff0;border-top-color:#5b38ff;border-radius:50%;animation:spin .75s linear infinite}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.summary-card,.pay-card{background:#fff;border-radius:18px;border:1px solid #ede9f6;padding:24px;box-shadow:0 2px 10px rgba(53,28,97,.05)}
+.summary-card h3,.pay-card h3{font-size:15px;font-weight:700;color:#17141f;margin:0 0 18px}
+.sum-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f4f2fa;font-size:14px;color:#4a4558}
+.sum-row:last-child{border-bottom:none}
+.pnr-v{color:#5b38ff;font-weight:800}
+.total-row{margin-top:8px;padding-top:12px;border-top:2px solid #ede9f6}
+.sum-total{font-size:20px;font-weight:800;color:#5b38ff}
+.pay-main-icon{font-size:44px;color:#5b38ff;display:block;text-align:center;margin-bottom:12px}
+.pay-sub{font-size:13px;color:#80798e;line-height:1.6;margin-bottom:20px;text-align:center}
+.pay-error{padding:10px 14px;border-radius:10px;background:rgba(255,76,76,.08);color:#bc2d2d;border:1px solid rgba(255,76,76,.15);font-size:13px;margin-bottom:14px}
+.pay-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;border-radius:14px;border:none;background:linear-gradient(90deg,#5b38ff,#7448ff,#ff8f73);color:white;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 8px 22px rgba(91,56,255,.24);transition:all .2s;margin-bottom:14px}
+.pay-btn:hover:not(:disabled){transform:translateY(-1px)}
+.pay-btn:disabled{opacity:.7;cursor:not-allowed}
+.pay-btn .material-symbols-rounded{font-size:20px}
+.pay-note{font-size:11.5px;color:#9a92aa;text-align:center}
+.btn-sp{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.pay-grid{grid-template-columns:1fr}.pay-container{padding:0 12px}}

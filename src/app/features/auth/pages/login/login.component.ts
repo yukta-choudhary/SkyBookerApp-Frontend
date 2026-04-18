@@ -1,8 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { LoginRequest } from '../../../../core/models/index';
 
 @Component({
   selector: 'app-login',
@@ -24,10 +25,6 @@ export class LoginComponent {
   error = signal('');
   success = signal('');
 
-  isFormInvalid = computed(() => {
-    return !this.email.trim() || !this.password.trim();
-  });
-
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
@@ -36,37 +33,41 @@ export class LoginComponent {
     this.error.set('');
     this.success.set('');
 
-    if (this.isFormInvalid()) {
+    if (!this.email.trim() || !this.password.trim()) {
       this.error.set('Please enter your email and password.');
       return;
     }
 
     this.loading.set(true);
 
-    this.authService.login({
+    const payload: LoginRequest = {
       email: this.email.trim(),
       password: this.password
-    }).subscribe({
-      next: (response) => {
-        if (response?.token) {
-          this.authService.saveToken(response.token);
-        }
+    };
 
-        this.success.set('Login successful. Redirecting...');
+    this.authService.login(payload).subscribe({
+      next: (res) => {
         this.loading.set(false);
-
+        this.success.set('Login successful. Redirecting...');
         setTimeout(() => {
-          this.router.navigateByUrl('/register');
-          // Later change to dashboard/home route
-          // this.router.navigateByUrl('/dashboard');
+          if (res.role === 'PASSENGER') this.router.navigateByUrl('/passenger/dashboard');
+          else if (res.role === 'AIRLINE_STAFF') this.router.navigateByUrl('/staff/dashboard');
+          else if (res.role === 'ADMIN') this.router.navigateByUrl('/admin/dashboard');
+          else this.router.navigateByUrl('/');
         }, 700);
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(
-          err?.error?.message || 'Unable to login right now. Please try again.'
-        );
+        this.error.set(err?.error?.message || 'Invalid email or password. Please try again.');
       }
     });
+  }
+
+  loginWithGoogle(): void {
+    window.location.href = `${window.location.origin}/oauth2/authorization/google`;
+  }
+
+  goToForgotPassword(): void {
+    this.router.navigateByUrl('/auth/forgot-password');
   }
 }
