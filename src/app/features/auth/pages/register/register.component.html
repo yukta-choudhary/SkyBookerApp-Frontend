@@ -59,7 +59,7 @@
         <form (ngSubmit)="register()" novalidate>
 
           <!-- Full Name -->
-          <div class="field-group">
+          <div class="field-group" [class.has-error]="fullNameError()">
             <label for="reg-fullname">Full name <span class="required">*</span></label>
             <input
               id="reg-fullname"
@@ -69,35 +69,62 @@
               placeholder="Enter your full name"
               required
               autocomplete="name"
+              (blur)="validateFullName()"
+              (input)="fullNameTouched && validateFullName()"
+              [class.input-error]="fullNameError()"
             />
+            @if (fullNameError()) {
+              <span class="field-error">
+                <span class="material-symbols-rounded">error</span>
+                {{ fullNameError() }}
+              </span>
+            }
           </div>
 
           <!-- Email -->
-          <div class="field-group">
+          <div class="field-group" [class.has-error]="emailError()">
             <label for="reg-email">Email address <span class="required">*</span></label>
             <input
               id="reg-email"
               name="email"
               type="email"
               [(ngModel)]="email"
-              placeholder="Enter your email"
+              placeholder="Enter your email (e.g. user@example.com)"
               required
               autocomplete="email"
+              (blur)="validateEmail()"
+              (input)="emailTouched && validateEmail()"
+              [class.input-error]="emailError()"
             />
+            @if (emailError()) {
+              <span class="field-error">
+                <span class="material-symbols-rounded">error</span>
+                {{ emailError() }}
+              </span>
+            }
           </div>
 
           <!-- Phone -->
-          <div class="field-group">
+          <div class="field-group" [class.has-error]="phoneError()">
             <label for="reg-phone">Phone number <span class="required">*</span></label>
             <input
               id="reg-phone"
               name="phone"
               type="tel"
               [(ngModel)]="phone"
-              placeholder="Enter your phone number"
+              placeholder="10–15 digit phone number (digits only)"
               required
               autocomplete="tel"
+              (blur)="validatePhone()"
+              (input)="phoneTouched && validatePhone()"
+              [class.input-error]="phoneError()"
             />
+            @if (phoneError()) {
+              <span class="field-error">
+                <span class="material-symbols-rounded">error</span>
+                {{ phoneError() }}
+              </span>
+            }
           </div>
 
           <!-- Role -->
@@ -118,7 +145,7 @@
           <!-- Passport + Nationality (optional, side by side) -->
           <div class="two-col">
             <div class="field-group">
-              <label for="reg-passport">Passport no.</label>
+              <label for="reg-passport">Passport no. <span class="optional">(optional)</span></label>
               <input
                 id="reg-passport"
                 name="passportNumber"
@@ -129,7 +156,7 @@
               />
             </div>
             <div class="field-group">
-              <label for="reg-nationality">Nationality</label>
+              <label for="reg-nationality">Nationality <span class="optional">(optional)</span></label>
               <input
                 id="reg-nationality"
                 name="nationality"
@@ -141,7 +168,7 @@
           </div>
 
           <!-- Password -->
-          <div class="field-group">
+          <div class="field-group" [class.has-error]="passwordError()">
             <label for="reg-password">Password <span class="required">*</span></label>
             <div class="password-wrap">
               <input
@@ -149,18 +176,27 @@
                 name="password"
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="password"
-                placeholder="Create password (min 8 chars)"
+                placeholder="Create password (minimum 8 characters)"
                 required
                 autocomplete="new-password"
+                (blur)="validatePassword()"
+                (input)="passwordTouched && validatePassword()"
+                [class.input-error]="passwordError()"
               />
               <button type="button" class="toggle-btn" (click)="togglePassword()">
                 {{ showPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
+            @if (passwordError()) {
+              <span class="field-error">
+                <span class="material-symbols-rounded">error</span>
+                {{ passwordError() }}
+              </span>
+            }
           </div>
 
           <!-- Confirm Password -->
-          <div class="field-group">
+          <div class="field-group" [class.has-error]="confirmPasswordError()">
             <label for="reg-confirm">Confirm password <span class="required">*</span></label>
             <div class="password-wrap">
               <input
@@ -168,21 +204,36 @@
                 name="confirmPassword"
                 [type]="showConfirmPassword ? 'text' : 'password'"
                 [(ngModel)]="confirmPassword"
-                placeholder="Confirm password"
+                placeholder="Re-enter your password"
                 required
                 autocomplete="new-password"
+                (blur)="validateConfirmPassword()"
+                (input)="confirmPasswordTouched && validateConfirmPassword()"
+                [class.input-error]="confirmPasswordError()"
               />
               <button type="button" class="toggle-btn" (click)="toggleConfirmPassword()">
                 {{ showConfirmPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
+            @if (confirmPasswordError()) {
+              <span class="field-error">
+                <span class="material-symbols-rounded">error</span>
+                {{ confirmPasswordError() }}
+              </span>
+            }
           </div>
 
           <!-- Terms -->
-          <label class="checkbox-wrap terms-check">
-            <input type="checkbox" name="acceptTerms" [(ngModel)]="acceptTerms" />
+          <label class="checkbox-wrap terms-check" [class.terms-error]="termsError()">
+            <input type="checkbox" name="acceptTerms" [(ngModel)]="acceptTerms" (change)="acceptTerms && termsError.set('')" />
             <span>I agree to the <a href="#" class="link-accent">Terms &amp; Conditions</a> and <a href="#" class="link-accent">Privacy Policy</a></span>
           </label>
+          @if (termsError()) {
+            <span class="field-error terms-field-error">
+              <span class="material-symbols-rounded">error</span>
+              {{ termsError() }}
+            </span>
+          }
 
           @if (error()) {
             <div class="alert-msg error">

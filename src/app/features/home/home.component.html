@@ -74,11 +74,17 @@
               }
             </div>
 
-            @if (showOriginDropdown() && originResults().length > 0) {
+            @if (showOriginDropdown()) {
               <div class="airport-dropdown animate-slide-down">
                 @if (originLoading()) {
                   <div class="dropdown-loading">
                     <div class="spinner-sm"></div>
+                    <span>Searching airports...</span>
+                  </div>
+                } @else if (originResults().length === 0 && origin.length >= 2) {
+                  <div class="dropdown-empty">
+                    <span class="material-symbols-rounded">search_off</span>
+                    <span>No airports found for "{{ origin }}"</span>
                   </div>
                 }
                 @for (airport of originResults(); track airport.airportId) {
@@ -120,8 +126,19 @@
               }
             </div>
 
-            @if (showDestDropdown() && destinationResults().length > 0) {
+            @if (showDestDropdown()) {
               <div class="airport-dropdown animate-slide-down">
+                @if (destLoading()) {
+                  <div class="dropdown-loading">
+                    <div class="spinner-sm"></div>
+                    <span>Searching airports...</span>
+                  </div>
+                } @else if (destinationResults().length === 0 && destination.length >= 2) {
+                  <div class="dropdown-empty">
+                    <span class="material-symbols-rounded">search_off</span>
+                    <span>No airports found for "{{ destination }}"</span>
+                  </div>
+                }
                 @for (airport of destinationResults(); track airport.airportId) {
                   <button class="airport-option" type="button" (click)="selectDest(airport)">
                     <span class="material-symbols-rounded">location_on</span>

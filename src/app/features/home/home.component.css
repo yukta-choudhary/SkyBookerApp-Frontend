@@ -10,7 +10,7 @@
 .hero {
   position: relative;
   padding: 64px 0 80px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hero-bg {
@@ -117,6 +117,8 @@
     0 4px 16px rgba(53,28,97,0.06);
   border: 1px solid rgba(255,255,255,0.8);
   backdrop-filter: blur(16px);
+  position: relative;
+  z-index: 10;
 }
 
 /* Trip Tabs */
@@ -290,8 +292,7 @@
   border-radius: 16px;
   border: 1.5px solid #e3dff0;
   box-shadow: 0 16px 40px rgba(53,28,97,0.14);
-  overflow: hidden;
-  z-index: 100;
+  z-index: 1000;
   max-height: 280px;
   overflow-y: auto;
 }
@@ -339,6 +340,31 @@
   flex-shrink: 0;
 }
 
+.dropdown-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 16px;
+  color: #6d6878;
+  font-size: 13px;
+}
+
+.dropdown-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 16px;
+  color: #80798e;
+  font-size: 13px;
+}
+
+.dropdown-empty .material-symbols-rounded {
+  font-size: 18px;
+  color: #bdb6cc;
+}
+
 /* Passenger Dropdown */
 .passenger-dropdown {
   position: absolute;
@@ -349,7 +375,7 @@
   border: 1.5px solid #e3dff0;
   box-shadow: 0 16px 40px rgba(53,28,97,0.14);
   padding: 20px;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .passenger-row {

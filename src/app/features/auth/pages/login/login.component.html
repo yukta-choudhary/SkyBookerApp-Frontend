@@ -43,20 +43,31 @@
 
         <form (ngSubmit)="login()" novalidate>
 
-          <div class="field-group">
-            <label for="login-email">Email</label>
+          <!-- Email Field -->
+          <div class="field-group" [class.has-error]="emailError()">
+            <label for="login-email">Email address</label>
             <input
               id="login-email"
               name="email"
               type="email"
               [(ngModel)]="email"
-              placeholder="Enter your email"
+              placeholder="Enter your email (e.g. user@example.com)"
               required
               autocomplete="email"
+              (blur)="validateEmail()"
+              (input)="emailTouched && validateEmail()"
+              [class.input-error]="emailError()"
             />
+            @if (emailError()) {
+              <span class="field-error">
+                <span class="material-symbols-rounded">error</span>
+                {{ emailError() }}
+              </span>
+            }
           </div>
 
-          <div class="field-group">
+          <!-- Password Field -->
+          <div class="field-group" [class.has-error]="passwordError()">
             <label for="login-password">Password</label>
             <div class="password-wrap">
               <input
@@ -64,14 +75,23 @@
                 name="password"
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="password"
-                placeholder="Enter your password"
+                placeholder="Enter your password (min. 8 characters)"
                 required
                 autocomplete="current-password"
+                (blur)="validatePassword()"
+                (input)="passwordTouched && validatePassword()"
+                [class.input-error]="passwordError()"
               />
               <button type="button" class="toggle-btn" (click)="togglePassword()">
                 {{ showPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
+            @if (passwordError()) {
+              <span class="field-error">
+                <span class="material-symbols-rounded">error</span>
+                {{ passwordError() }}
+              </span>
+            }
           </div>
 
           <div class="options-row">

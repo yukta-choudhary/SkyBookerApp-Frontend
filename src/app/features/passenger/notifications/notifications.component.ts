@@ -1,6 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Notification } from '../../../core/models/index';
@@ -11,7 +10,7 @@ import { catchError, of } from 'rxjs';
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [CommonModule, NavbarComponent, FooterComponent],
   template: `
     <app-navbar></app-navbar>
     <main class="notif-page">

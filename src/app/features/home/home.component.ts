@@ -116,16 +116,21 @@ export class HomeComponent implements OnInit {
 
   search(): void {
     this.searchError.set('');
-    if (!this.originCode) { this.searchError.set('Please select a departure airport.'); return; }
-    if (!this.destinationCode) { this.searchError.set('Please select a destination airport.'); return; }
+
+    // If user typed but did not select from dropdown, use the typed text as IATA/city code
+    const resolvedOrigin = this.originCode || this.origin.trim().toUpperCase().slice(0, 3);
+    const resolvedDest = this.destinationCode || this.destination.trim().toUpperCase().slice(0, 3);
+
+    if (!this.origin.trim()) { this.searchError.set('Please enter a departure city or airport.'); return; }
+    if (!this.destination.trim()) { this.searchError.set('Please enter a destination city or airport.'); return; }
     if (!this.departureDate) { this.searchError.set('Please select a departure date.'); return; }
     if (this.tripType === 'ROUND_TRIP' && !this.returnDate) {
       this.searchError.set('Please select a return date.'); return;
     }
 
     const params: Record<string, string> = {
-      origin: this.originCode,
-      destination: this.destinationCode,
+      origin: resolvedOrigin,
+      destination: resolvedDest,
       date: this.departureDate,
       passengers: String(this.passengers),
       tripType: this.tripType

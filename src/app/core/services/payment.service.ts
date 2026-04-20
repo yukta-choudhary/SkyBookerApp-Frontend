@@ -21,8 +21,11 @@ export class PaymentService {
   verifyPayment(payload: PaymentVerifyRequest): Observable<PaymentResponse> {
     return this.http.post<PaymentResponse>(`${this.baseUrl}/verify`, payload);
   }
-  refundPayment(paymentId: string, payload: PaymentRefundRequest): Observable<PaymentResponse> {
-    return this.http.post<PaymentResponse>(`${this.baseUrl}/refund/${paymentId}`, payload);
+  refundPayment(payload: PaymentRefundRequest): Observable<PaymentResponse> {
+    return this.http.post<PaymentResponse>(`${this.baseUrl}/refund`, payload);
+  }
+  getPaymentById(paymentId: string): Observable<PaymentResponse> {
+    return this.http.get<PaymentResponse>(`${this.baseUrl}/${paymentId}`);
   }
   getPaymentByBooking(bookingId: string): Observable<PaymentResponse> {
     return this.http.get<PaymentResponse>(`${this.baseUrl}/booking/${bookingId}`);
@@ -30,10 +33,7 @@ export class PaymentService {
   getPaymentsByUser(userId: string): Observable<PaymentResponse[]> {
     return this.http.get<PaymentResponse[]>(`${this.baseUrl}/user/${userId}`);
   }
-  getPaymentStatus(paymentId: string): Observable<PaymentResponse> {
-    return this.http.get<PaymentResponse>(`${this.baseUrl}/status/${paymentId}`);
-  }
   getRevenue(): Observable<RevenueResponse> {
-    return this.http.get<RevenueResponse>(`${this.baseUrl}/revenue`);
+    return this.http.get<RevenueResponse>(`${this.baseUrl}/admin/revenue`);
   }
 }

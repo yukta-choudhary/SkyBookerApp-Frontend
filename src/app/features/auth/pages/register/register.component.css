@@ -225,6 +225,45 @@
 
 .field-group input::placeholder { color: #a09aae; }
 
+/* Per-field validation errors */
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #bc2d2d;
+  font-weight: 500;
+}
+
+.field-error .material-symbols-rounded { font-size: 14px; }
+
+.input-error {
+  border-color: #e53e3e !important;
+  background: rgba(229, 62, 62, 0.03) !important;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.10) !important;
+}
+
+.has-error label { color: #bc2d2d; }
+
+.optional {
+  color: #9a92aa;
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.terms-error {
+  color: #bc2d2d;
+}
+
+.terms-field-error {
+  margin-top: -8px;
+  margin-bottom: 10px;
+}
+
 .form-select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%236d6878'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");

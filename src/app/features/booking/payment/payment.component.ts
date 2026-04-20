@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BookingService } from '../../../core/services/booking.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { Booking, PaymentResponse } from '../../../core/models/index';
@@ -14,7 +14,7 @@ declare const Razorpay: any;
 @Component({
   selector: 'app-payment',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [CommonModule, NavbarComponent, FooterComponent],
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.css'
 })

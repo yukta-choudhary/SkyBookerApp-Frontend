@@ -1,7 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AirlineService } from '../../../core/services/airline.service';
 import { FlightService } from '../../../core/services/flight.service';
@@ -16,7 +15,7 @@ import { catchError, of } from 'rxjs';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
