@@ -6,7 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { FlightService } from '../../../core/services/flight.service';
 import { BookingService } from '../../../core/services/booking.service';
 import { AirlineService } from '../../../core/services/airline.service';
-import { Flight, Booking, Airline, FlightStatus } from '../../../core/models/index';
+import { Flight, Booking, Airline, Airport, FlightStatus } from '../../../core/models/index';
 import { NavbarComponent } from '../../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/footer/footer.component';
 import { catchError, of } from 'rxjs';
@@ -41,9 +41,22 @@ export class StaffDashboardComponent implements OnInit {
   statusUpdateSuccess = signal('');
   statusUpdateError = signal('');
 
+  // Add Flight form
+  showAddFlightModal = signal(false);
+  airports = signal<Airport[]>([]);
+  flightForm: any = {
+    flightNumber: '', airlineId: '', originAirportCode: '', destinationAirportCode: '',
+    departureTime: '', arrivalTime: '', basePrice: 0, totalSeats: 180, status: 'ON_TIME'
+  };
+  addFlightLoading = signal(false);
+  addFlightError = signal('');
+
   ngOnInit(): void {
     this.airlineService.getAllAirlines().pipe(catchError(() => of([]))).subscribe(a => {
       this.airlines.set(a);
+    });
+    this.airlineService.getAllAirports().pipe(catchError(() => of([]))).subscribe(p => {
+      this.airports.set(p);
     });
 
     // For demo: load all airlines' flights
@@ -118,4 +131,32 @@ export class StaffDashboardComponent implements OnInit {
   }
 
   statuses: FlightStatus[] = ['ON_TIME', 'DELAYED', 'CANCELLED', 'DEPARTED', 'ARRIVED'];
+
+  openAddFlightModal(): void {
+    this.flightForm = {
+      flightNumber: '', airlineId: this.selectedAirlineId || '', originAirportCode: '', destinationAirportCode: '',
+      departureTime: '', arrivalTime: '', basePrice: 0, totalSeats: 180, status: 'ON_TIME'
+    };
+    this.addFlightError.set('');
+    this.showAddFlightModal.set(true);
+  }
+
+  addFlight(): void {
+    if (!this.flightForm.flightNumber || !this.flightForm.airlineId || !this.flightForm.originAirportCode || !this.flightForm.destinationAirportCode) {
+      this.addFlightError.set('Please fill in all required fields.'); return;
+    }
+    this.addFlightLoading.set(true);
+    this.addFlightError.set('');
+    this.flightService.addFlight(this.flightForm).subscribe({
+      next: (f) => {
+        this.flights.update(list => [f, ...list]);
+        this.addFlightLoading.set(false);
+        this.showAddFlightModal.set(false);
+      },
+      error: (err) => {
+        this.addFlightLoading.set(false);
+        this.addFlightError.set(err?.error?.message || 'Failed to add flight.');
+      }
+    });
+  }
 }

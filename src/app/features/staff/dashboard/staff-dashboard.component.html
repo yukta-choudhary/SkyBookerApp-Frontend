@@ -9,10 +9,10 @@
         <h1>Staff Dashboard</h1>
         <p>Manage your flights, update statuses and view passenger manifests</p>
       </div>
-      <a routerLink="/staff/flights/add" class="btn-primary">
+      <button class="btn-primary" (click)="openAddFlightModal()">
         <span class="material-symbols-rounded">add</span>
         Add Flight
-      </a>
+      </button>
     </div>
 
     <!-- Airline Selector -->
@@ -209,3 +209,78 @@
 }
 
 <app-footer></app-footer>
+
+<!-- Add Flight Modal -->
+@if (showAddFlightModal()) {
+  <div class="modal-overlay" (click)="showAddFlightModal.set(false)">
+    <div class="modal-box wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Flight</h3>
+        <button class="modal-close" (click)="showAddFlightModal.set(false)">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-two-col">
+          <div class="form-group">
+            <label class="modal-label">Flight Number <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="flightForm.flightNumber" placeholder="e.g. AI-202" class="modal-select" />
+          </div>
+          <div class="form-group">
+            <label class="modal-label">Airline <span class="req">*</span></label>
+            <select [(ngModel)]="flightForm.airlineId" class="modal-select">
+              <option value="">— Select Airline —</option>
+              @for (airline of airlines(); track airline.airlineId) {
+                <option [value]="airline.airlineId">{{ airline.name }} ({{ airline.iataCode }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="modal-label">Origin Airport <span class="req">*</span></label>
+            <select [(ngModel)]="flightForm.originAirportCode" class="modal-select">
+              <option value="">— Select Origin —</option>
+              @for (airport of airports(); track airport.airportId) {
+                <option [value]="airport.iataCode">{{ airport.city }} ({{ airport.iataCode }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="modal-label">Destination Airport <span class="req">*</span></label>
+            <select [(ngModel)]="flightForm.destinationAirportCode" class="modal-select">
+              <option value="">— Select Destination —</option>
+              @for (airport of airports(); track airport.airportId) {
+                <option [value]="airport.iataCode">{{ airport.city }} ({{ airport.iataCode }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="modal-label">Departure Time <span class="req">*</span></label>
+            <input type="datetime-local" [(ngModel)]="flightForm.departureTime" class="modal-select" />
+          </div>
+          <div class="form-group">
+            <label class="modal-label">Arrival Time <span class="req">*</span></label>
+            <input type="datetime-local" [(ngModel)]="flightForm.arrivalTime" class="modal-select" />
+          </div>
+          <div class="form-group">
+            <label class="modal-label">Base Price (₹)</label>
+            <input type="number" [(ngModel)]="flightForm.basePrice" placeholder="4500" class="modal-select" />
+          </div>
+          <div class="form-group">
+            <label class="modal-label">Total Seats</label>
+            <input type="number" [(ngModel)]="flightForm.totalSeats" placeholder="180" class="modal-select" />
+          </div>
+        </div>
+        @if (addFlightError()) {
+          <div class="modal-error">{{ addFlightError() }}</div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="showAddFlightModal.set(false)">Cancel</button>
+        <button class="btn-primary" (click)="addFlight()" [disabled]="addFlightLoading()">
+          @if (addFlightLoading()) { <span class="btn-spinner"></span> Adding... }
+          @else { <span class="material-symbols-rounded">save</span> Add Flight }
+        </button>
+      </div>
+    </div>
+  </div>
+}

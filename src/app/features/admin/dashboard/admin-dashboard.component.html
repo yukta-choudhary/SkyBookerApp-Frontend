@@ -102,25 +102,7 @@
           </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions-grid">
-          <button class="qa-tile" (click)="setTab('airlines')">
-            <span class="material-symbols-rounded mat-icon-filled">airlines</span>
-            Manage Airlines
-          </button>
-          <button class="qa-tile" (click)="setTab('airports')">
-            <span class="material-symbols-rounded mat-icon-filled">flight_takeoff</span>
-            Manage Airports
-          </button>
-          <button class="qa-tile" (click)="setTab('users')">
-            <span class="material-symbols-rounded mat-icon-filled">people</span>
-            View Users
-          </button>
-          <button class="qa-tile" (click)="setTab('broadcast')">
-            <span class="material-symbols-rounded mat-icon-filled">campaign</span>
-            Broadcast
-          </button>
-        </div>
+
       }
     }
 
@@ -188,6 +170,10 @@
     @if (activeTab() === 'airports') {
       <div class="tab-header">
         <h2>Airports</h2>
+        <button class="btn-primary" (click)="showAirportModal.set(true)">
+          <span class="material-symbols-rounded">add</span>
+          Add Airport
+        </button>
       </div>
       <div class="table-wrap card-table">
         <table class="data-table">
@@ -371,6 +357,70 @@
         <button class="btn-primary" (click)="saveAirline()" [disabled]="airlineFormLoading()">
           @if (airlineFormLoading()) { <span class="btn-spinner"></span> Saving... }
           @else { <span class="material-symbols-rounded">save</span> Save Airline }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Add Airport Modal -->
+@if (showAirportModal()) {
+  <div class="modal-overlay" (click)="showAirportModal.set(false)">
+    <div class="modal-box wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Airport</h3>
+        <button class="modal-close" (click)="showAirportModal.set(false)">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-two-col">
+          <div class="form-group">
+            <label class="form-label">Airport ID <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="airportForm.airportId" placeholder="e.g. UUID" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Airport Name <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="airportForm.name" placeholder="Indira Gandhi Intl" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">IATA Code <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="airportForm.iataCode" placeholder="DEL" maxlength="3" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">ICAO Code</label>
+            <input type="text" [(ngModel)]="airportForm.icaoCode" placeholder="VIDP" maxlength="4" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">City <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="airportForm.city" placeholder="New Delhi" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="airportForm.country" placeholder="India" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Latitude</label>
+            <input type="number" [(ngModel)]="airportForm.latitude" placeholder="28.5665" class="form-ctrl" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude</label>
+            <input type="number" [(ngModel)]="airportForm.longitude" placeholder="77.1031" class="form-ctrl" />
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1">
+            <label class="form-label">Timezone</label>
+            <input type="text" [(ngModel)]="airportForm.timezone" placeholder="Asia/Kolkata" class="form-ctrl" />
+          </div>
+        </div>
+        @if (airportFormError()) {
+          <div class="alert-error">{{ airportFormError() }}</div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="showAirportModal.set(false)">Cancel</button>
+        <button class="btn-primary" (click)="saveAirport()" [disabled]="airportFormLoading()">
+          @if (airportFormLoading()) { <span class="btn-spinner"></span> Saving... }
+          @else { <span class="material-symbols-rounded">save</span> Save Airport }
         </button>
       </div>
     </div>

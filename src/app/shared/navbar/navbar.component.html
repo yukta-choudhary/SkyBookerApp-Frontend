@@ -30,9 +30,6 @@
 
       @if (isLoggedIn() && role() === 'ADMIN') {
         <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
-        <a routerLink="/admin/airlines" routerLinkActive="active" class="nav-link">Airlines</a>
-        <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">Users</a>
-        <a routerLink="/admin/revenue" routerLinkActive="active" class="nav-link">Revenue</a>
       }
     </div>
 
@@ -43,7 +40,7 @@
         <a routerLink="/auth/register" class="btn-cta">Get Started</a>
       } @else {
         <!-- Notifications Bell -->
-        <a [routerLink]="role() === 'ADMIN' ? '/admin/dashboard' : '/passenger/notifications'" class="notif-btn" title="Notifications">
+        <a [routerLink]="role() === 'ADMIN' ? '/admin/notifications' : role() === 'AIRLINE_STAFF' ? '/staff/notifications' : '/passenger/notifications'" class="notif-btn" title="Notifications">
           <span class="material-symbols-rounded">notifications</span>
           @if (unreadCount() > 0) {
             <span class="notif-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
@@ -113,16 +110,22 @@
           <a routerLink="/staff/flights" class="mob-link" (click)="closeMobile()">
             <span class="material-symbols-rounded">flight</span> My Flights
           </a>
+          <a routerLink="/staff/notifications" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">notifications</span> Notifications
+            @if (unreadCount() > 0) {
+              <span class="mob-badge">{{ unreadCount() }}</span>
+            }
+          </a>
         }
         @if (role() === 'ADMIN') {
           <a routerLink="/admin/dashboard" class="mob-link" (click)="closeMobile()">
             <span class="material-symbols-rounded">dashboard</span> Dashboard
           </a>
-          <a routerLink="/admin/airlines" class="mob-link" (click)="closeMobile()">
-            <span class="material-symbols-rounded">airlines</span> Airlines
-          </a>
-          <a routerLink="/admin/users" class="mob-link" (click)="closeMobile()">
-            <span class="material-symbols-rounded">people</span> Users
+          <a routerLink="/admin/notifications" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">notifications</span> Notifications
+            @if (unreadCount() > 0) {
+              <span class="mob-badge">{{ unreadCount() }}</span>
+            }
           </a>
         }
         <div class="mob-divider"></div>

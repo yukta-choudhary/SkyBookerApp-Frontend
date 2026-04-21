@@ -33,6 +33,12 @@ export const routes: Routes = [
     ]
   },
 
+  // OAuth callback
+  {
+    path: 'oauth-success',
+    loadComponent: () => import('./features/auth/pages/oauth-success/oauth-success.component').then(m => m.OAuthSuccessComponent)
+  },
+
   // Legacy routes (redirect to new paths)
   { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
   { path: 'register', redirectTo: 'auth/register', pathMatch: 'full' },
@@ -118,6 +124,10 @@ export const routes: Routes = [
         path: 'seat-config/:flightId',
         loadComponent: () => import('./features/staff/dashboard/staff-dashboard.component').then(m => m.StaffDashboardComponent)
       },
+      {
+        path: 'notifications',
+        loadComponent: () => import('./features/passenger/notifications/notifications.component').then(m => m.NotificationsComponent)
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -142,6 +152,10 @@ export const routes: Routes = [
       {
         path: 'revenue',
         loadComponent: () => import('./features/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'notifications',
+        loadComponent: () => import('./features/passenger/notifications/notifications.component').then(m => m.NotificationsComponent)
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

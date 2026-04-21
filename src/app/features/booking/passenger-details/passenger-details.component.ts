@@ -130,6 +130,7 @@ export class PassengerDetailsComponent implements OnInit {
   seatNumber = '';
   passengers = 1;
   tripType: TripType = 'ONE_WAY';
+  basePrice = 0;
 
   form: Partial<PassengerCreateRequest> = { title: 'Mr', firstName: '', lastName: '', dateOfBirth: '', gender: 'MALE', passportNumber: '', nationality: '', passportExpiry: '', passengerType: 'ADULT' };
   contactEmail = '';
@@ -145,6 +146,7 @@ export class PassengerDetailsComponent implements OnInit {
     this.seatNumber = p['seatNumber'] || '';
     this.passengers = parseInt(p['passengers'] || '1');
     this.tripType = p['tripType'] || 'ONE_WAY';
+    this.basePrice = parseFloat(p['basePrice'] || '0');
     const user = this.authService.currentUser();
     if (user) { this.contactEmail = user.email; }
   }
@@ -155,12 +157,18 @@ export class PassengerDetailsComponent implements OnInit {
     }
     this.loading.set(true); this.error.set('');
 
+    const baseFare = this.basePrice > 0 ? this.basePrice * this.passengers : 0;
+    const taxes = Math.round(baseFare * 0.12); // 12% taxes
+    const totalFare = baseFare + taxes;
     const now = new Date().toISOString();
+
     const payload = {
       userId: this.authService.getUserId()!,
       flightId: this.flightId,
       tripType: this.tripType,
-      baseFare: 0, taxes: 0, totalFare: 0,
+      baseFare: baseFare,
+      taxes: taxes,
+      totalFare: totalFare,
       contactEmail: this.contactEmail.trim(),
       contactPhone: this.contactPhone.trim(),
       departureTime: now

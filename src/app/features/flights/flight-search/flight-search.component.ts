@@ -155,7 +155,8 @@ export class FlightSearchComponent implements OnInit {
     this.router.navigate(['/booking/seats', flight.flightId], {
       queryParams: {
         passengers: this.passengers,
-        tripType: this.tripType
+        tripType: this.tripType,
+        basePrice: flight.basePrice
       }
     });
   }

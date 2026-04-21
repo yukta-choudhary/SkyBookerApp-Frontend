@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LoginRequest } from '../../../../core/models/index';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -105,7 +106,7 @@ export class LoginComponent {
   }
 
   loginWithGoogle(): void {
-    window.location.href = `${window.location.origin}/oauth2/authorization/google`;
+    window.location.href = `${environment.apiUrl}/oauth2/authorization/google`;
   }
 
   goToForgotPassword(): void {

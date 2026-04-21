@@ -67,6 +67,7 @@ import { catchError, of } from 'rxjs';
               <h3>Change Password</h3>
               <div class="form-group"><label>Current Password</label><input type="password" [(ngModel)]="pwForm.oldPassword" class="form-ctrl" /></div>
               <div class="form-group"><label>New Password</label><input type="password" [(ngModel)]="pwForm.newPassword" class="form-ctrl" /></div>
+              <div class="form-group"><label>Confirm New Password</label><input type="password" [(ngModel)]="confirmNewPassword" class="form-ctrl" /></div>
               @if (pwSuccess()) { <div class="alert-success"><span class="material-symbols-rounded">check_circle</span> {{ pwSuccess() }}</div> }
               @if (pwError()) { <div class="alert-error">{{ pwError() }}</div> }
               <button class="save-btn" [disabled]="pwLoading()" (click)="changePassword()">
@@ -121,6 +122,7 @@ export class ProfileComponent implements OnInit {
   loading = signal(true);
   editForm: ProfileUpdateRequest = { fullName: '', phone: '', passportNumber: '', nationality: '' };
   pwForm: ChangePasswordRequest = { oldPassword: '', newPassword: '' };
+  confirmNewPassword = '';
   profileLoading = signal(false); profileSuccess = signal(''); profileError = signal('');
   pwLoading = signal(false); pwSuccess = signal(''); pwError = signal('');
 
@@ -140,10 +142,11 @@ export class ProfileComponent implements OnInit {
   }
 
   changePassword(): void {
-    if (!this.pwForm.oldPassword || !this.pwForm.newPassword) { this.pwError.set('Both fields are required.'); return; }
+    if (!this.pwForm.oldPassword || !this.pwForm.newPassword) { this.pwError.set('All password fields are required.'); return; }
+    if (this.pwForm.newPassword !== this.confirmNewPassword) { this.pwError.set('New passwords do not match.'); return; }
     this.pwLoading.set(true); this.pwError.set(''); this.pwSuccess.set('');
     this.authService.changePassword(this.pwForm).pipe(catchError(err => { this.pwLoading.set(false); this.pwError.set(err?.error?.message || 'Failed to change password.'); return of(null); })).subscribe(r => {
-      if (r) { this.pwLoading.set(false); this.pwSuccess.set('Password updated successfully!'); this.pwForm = { oldPassword: '', newPassword: '' }; setTimeout(() => this.pwSuccess.set(''), 3000); }
+      if (r) { this.pwLoading.set(false); this.pwSuccess.set('Password updated successfully!'); this.pwForm = { oldPassword: '', newPassword: '' }; this.confirmNewPassword = ''; setTimeout(() => this.pwSuccess.set(''), 3000); }
     });
   }
 }

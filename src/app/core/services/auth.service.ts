@@ -80,6 +80,10 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, { email });
   }
 
+  verifyOtp(email: string, otp: string): Observable<{ message: string; token: string }> {
+    return this.http.post<{ message: string; token: string }>(`${this.baseUrl}/verify-otp`, { email, otp });
+  }
+
   resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, { token, newPassword });
   }

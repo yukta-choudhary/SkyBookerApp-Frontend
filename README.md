@@ -2,7 +2,20 @@
 
 ## About
 
-SkyBooker Frontend is a modern single-page application for the SkyBooker Airline Ticket Booking platform. It connects to the SkyBooker microservices backend via a unified API Gateway (`localhost:8080`) and provides role-based dashboards for Passengers, Airline Staff, and Admins — with a complete booking flow including flight search, seat selection, passenger details, Razorpay payment, and booking confirmation.
+SkyBooker Frontend is a modern **Angular 21** single-page application for the SkyBooker Airline Ticket Booking platform. It connects to the SkyBooker microservices backend via a unified API Gateway (`localhost:8080`) and provides role-based dashboards for Passengers, Airline Staff, and Admins — with a complete booking flow including flight search, seat selection, passenger details, Razorpay payment, and booking confirmation.
+
+---
+
+## Tech Stack
+
+- **Angular 21** (standalone components, signals, `@for` / `@if` control flow)
+- **TypeScript 5.9**
+- **RxJS 7.8** — reactive HTTP, debounced autocomplete
+- **Vanilla CSS** — custom design system (no Tailwind)
+- **Google Fonts** — Inter font family
+- **Google Material Symbols** — icon set
+- **Razorpay Checkout.js** — client-side payment integration
+- **Hash-based routing** — `withHashLocation()` for static hosting compatibility
 
 ---
 
@@ -209,6 +222,8 @@ src/
 
 ### Key Architectural Decisions
 
+- **Standalone Components** — No `NgModule` — all components use `standalone: true`
+- **Angular Signals** — Used throughout for reactive state management (replacing BehaviorSubject)
 - **Functional Route Guards** — `CanActivateFn` guards for auth, role, and guest-only routes
 - **HTTP Interceptor** — Automatically attaches JWT `Bearer` token; handles 401 with token refresh
 - **Guest Guard** — Prevents logged-in users from accessing login/register pages; redirects to role-specific dashboard
@@ -243,9 +258,21 @@ All services call the backend through the API Gateway (`http://localhost:8080`):
 
 ---
 
+## Design System
+
+- **Primary Color:** `#5b38ff` (Violet) with gradient to `#7448ff` → `#ff8f73` (Coral)
+- **Font:** Inter (Google Fonts)
+- **Icons:** Google Material Symbols Rounded
+- **Border Radius:** 10–24px (rounded, modern aesthetic)
+- **Glassmorphism effects** — Cards with subtle box shadows and backdrop blur
+- **Micro-animations** — Fade-up animations, spinner loaders, hover transitions
+- **Responsive** — Mobile-first grid layouts with media query breakpoints
+
+---
+
 ## Important Notes
 
-- **Backend must be running** for any feature to work. Start all microservices .
+- **Backend must be running** for any feature to work. Start all microservices (see backend README).
 - **Kafka is optional** for the basic booking flow. Without Kafka, email notifications and in-app alerts won't trigger automatically, but payments and bookings still work.
 - **Razorpay test mode** — No real money is charged. Use the test card details above.
 - **The app uses hash-based routing** (`/#/home`, `/#/auth/login`, etc.) for static hosting compatibility.

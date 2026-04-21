@@ -324,6 +324,26 @@
   animation: slideUp 0.3s ease;
 }
 
+.modal-box.wide { max-width: 640px; }
+
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+
+.req { color: #ef4444; }
+
+.btn-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
 .modal-header {
   display: flex;
   align-items: center;

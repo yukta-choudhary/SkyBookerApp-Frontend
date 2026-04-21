@@ -135,6 +135,9 @@ export class SeatSelectionComponent implements OnInit {
   private readonly router = inject(Router);
 
   flightId = '';
+  passengers = 1;
+  tripType = 'ONE_WAY';
+  basePrice = 0;
   seats = signal<Seat[]>([]);
   selectedSeat = signal<Seat | null>(null);
   selectedClass = signal<SeatClass>('ECONOMY');
@@ -144,6 +147,11 @@ export class SeatSelectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.flightId = this.route.snapshot.paramMap.get('flightId') || '';
+    const p = this.route.snapshot.queryParams;
+    this.passengers = parseInt(p['passengers'] || '1');
+    this.tripType = p['tripType'] || 'ONE_WAY';
+    this.basePrice = parseFloat(p['basePrice'] || '0');
+
     this.seatService.getSeatMap(this.flightId).pipe(catchError(() => of([]))).subscribe(s => {
       this.seats.set(s);
       this.loading.set(false);
@@ -162,7 +170,13 @@ export class SeatSelectionComponent implements OnInit {
     const seat = this.selectedSeat();
     if (!seat) return;
     this.router.navigate(['/booking/passengers', this.flightId], {
-      queryParams: { seatId: seat.seatId, seatNumber: seat.seatNumber }
+      queryParams: {
+        seatId: seat.seatId,
+        seatNumber: seat.seatNumber,
+        passengers: this.passengers,
+        tripType: this.tripType,
+        basePrice: this.basePrice
+      }
     });
   }
 }

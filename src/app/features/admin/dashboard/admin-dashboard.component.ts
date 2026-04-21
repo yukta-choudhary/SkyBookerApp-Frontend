@@ -7,7 +7,7 @@ import { FlightService } from '../../../core/services/flight.service';
 import { BookingService } from '../../../core/services/booking.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { Airline, Airport, Flight, UserSummaryResponse, BroadcastRequest } from '../../../core/models/index';
+import { Airline, Airport, AirportCreateRequest, Flight, UserSummaryResponse, BroadcastRequest } from '../../../core/models/index';
 import { NavbarComponent } from '../../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/footer/footer.component';
 import { catchError, of } from 'rxjs';
@@ -50,6 +50,12 @@ export class AdminDashboardComponent implements OnInit {
   airlineFormLoading = signal(false);
   airlineFormError = signal('');
 
+  // Airport form
+  showAirportModal = signal(false);
+  airportForm: Partial<AirportCreateRequest> = { airportId: '', name: '', iataCode: '', icaoCode: '', city: '', country: '', latitude: 0, longitude: 0, timezone: '' };
+  airportFormLoading = signal(false);
+  airportFormError = signal('');
+
   ngOnInit(): void {
     this.airlineService.getAllAirlines().pipe(catchError(() => of([]))).subscribe(a => {
       this.airlines.set(a);
@@ -60,8 +66,8 @@ export class AdminDashboardComponent implements OnInit {
     this.authService.getAllUsers().pipe(catchError(() => of([]))).subscribe(u => {
       this.users.set(u);
     });
-    this.paymentService.getRevenue().pipe(catchError(() => of({ totalRevenue: 0, currency: 'INR' }))).subscribe(r => {
-      this.totalRevenue.set(r.totalRevenue);
+    this.paymentService.getRevenue().pipe(catchError(() => of({ totalRevenue: 0 }))).subscribe((r: any) => {
+      this.totalRevenue.set(r.totalRevenue ?? 0);
       this.loading.set(false);
     });
   }
@@ -73,9 +79,26 @@ export class AdminDashboardComponent implements OnInit {
     }
     this.broadcastLoading.set(true);
     this.broadcastError.set('');
+
+    // Determine recipient IDs based on selected role
+    const usersList = this.users();
+    let recipients: string[];
+    if (this.broadcastRole && this.broadcastRole !== 'ALL') {
+      recipients = usersList.filter(u => u.role === this.broadcastRole).map(u => u.userId);
+    } else {
+      recipients = usersList.map(u => u.userId);
+    }
+
+    if (recipients.length === 0) {
+      this.broadcastLoading.set(false);
+      this.broadcastError.set('No users found for the selected role.');
+      return;
+    }
+
     const payload: BroadcastRequest = {
       title: this.broadcastTitle.trim(),
       message: this.broadcastMsg.trim(),
+      recipientIds: recipients,
       targetRole: this.broadcastRole as any || undefined
     };
     this.notifService.broadcastNotification(payload).subscribe({
@@ -130,5 +153,22 @@ export class AdminDashboardComponent implements OnInit {
 
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  saveAirport(): void {
+    this.airportFormLoading.set(true);
+    this.airportFormError.set('');
+    this.airlineService.createAirport(this.airportForm as any).subscribe({
+      next: (a) => {
+        this.airports.update(list => [a, ...list]);
+        this.airportFormLoading.set(false);
+        this.showAirportModal.set(false);
+        this.airportForm = { airportId: '', name: '', iataCode: '', icaoCode: '', city: '', country: '', latitude: 0, longitude: 0, timezone: '' };
+      },
+      error: (err) => {
+        this.airportFormLoading.set(false);
+        this.airportFormError.set(err?.error?.message || 'Failed to create airport.');
+      }
+    });
   }
 }
