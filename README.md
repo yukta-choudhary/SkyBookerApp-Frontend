@@ -48,12 +48,13 @@ Output goes to `dist/` directory.
 
 ## Environment Configuration
 
-| File | API URL | Razorpay Key |
-|------|---------|--------------|
-| `src/environments/environment.ts` | `http://localhost:8080` | `rzp_test_Semh94IyjyUsxQ` |
-| `src/environments/environment.prod.ts` | `http://localhost:8080` | (set your live key) |
+| File | API URL | Auth Service URL | Razorpay Key |
+|------|---------|-----------------|--------------|
+| `src/environments/environment.ts` | `http://localhost:8080` | `http://localhost:8081` | `rzp_test_Semh94IyjyUsxQ` |
+| `src/environments/environment.prod.ts` | `http://localhost:8080` | — (uses gateway) | `rzp_live_YOUR_KEY_ID` |
 
-All API calls go through the **API Gateway** on port `8080`, which routes to individual microservices.
+- All API calls go through the **API Gateway** on port `8080`, which routes to individual microservices.
+- The `authServiceUrl` is used for **Google OAuth2** login, which bypasses the gateway to connect directly to the auth-service on port `8081`.
 
 ---
 
@@ -174,12 +175,27 @@ The frontend integrates with **Razorpay** for payment processing using the Razor
 | Page | Route | Description |
 |------|-------|-------------|
 | **Staff Dashboard** | `/staff/dashboard` | Select airline → view flights, view flight bookings, update flight status (ON_TIME, DELAYED, CANCELLED, DEPARTED, ARRIVED) |
+| **Staff Flights** | `/staff/flights` | Flight management (loads the staff dashboard) |
+| **Seat Configuration** | `/staff/seat-config/:flightId` | Configure seats for a flight (loads the staff dashboard) |
+| **Notifications** | `/staff/notifications` | View all staff notifications |
+| **Profile** | `/staff/profile` | Edit profile and change password |
 
 ### Admin Pages (requires `ADMIN` role)
 
 | Page | Route | Description |
 |------|-------|-------------|
 | **Admin Dashboard** | `/admin/dashboard` | Overview with tabs: airlines list, airport list, user management, revenue stats, airline CRUD, broadcast notifications |
+| **Airlines Management** | `/admin/airlines` | Airline CRUD operations (loads the admin dashboard) |
+| **User Management** | `/admin/users` | View and manage all platform users (loads the admin dashboard) |
+| **Revenue Analytics** | `/admin/revenue` | Revenue charts and statistics (loads the admin dashboard) |
+| **Notifications** | `/admin/notifications` | View all admin notifications |
+| **Profile** | `/admin/profile` | Edit profile and change password |
+
+### OAuth Callback
+
+| Page | Route | Description |
+|------|-------|-------------|
+| **OAuth Success** | `/oauth-success` | Processes OAuth2 login callback with tokens from query parameters |
 
 ---
 
@@ -276,3 +292,30 @@ All services call the backend through the API Gateway (`http://localhost:8080`):
 - **Kafka is optional** for the basic booking flow. Without Kafka, email notifications and in-app alerts won't trigger automatically, but payments and bookings still work.
 - **Razorpay test mode** — No real money is charged. Use the test card details above.
 - **The app uses hash-based routing** (`/#/home`, `/#/auth/login`, etc.) for static hosting compatibility.
+- **OAuth2 Login** — Google OAuth2 login is supported. On successful OAuth login, the backend redirects to `/#/auth/oauth-success` with tokens as query parameters.
+
+---
+
+## Testing
+
+### Running Unit Tests
+
+```bash
+npm test
+```
+
+This runs the test suite using **Vitest** (configured as the Angular test runner).
+
+### Backend Integration
+
+The frontend relies entirely on the backend microservices. For full end-to-end testing:
+
+1. Start all backend services (see [Backend README](../SkyBookerApp-Backend/README.md))
+2. Start Kafka (optional — for notification testing)
+3. Run the frontend with `npm start`
+4. Use Razorpay test card credentials for payment flows
+
+### Backend Test Suite
+
+The backend includes **~131 JUnit 5 + Mockito** unit tests across all 8 microservices. See the [Backend README](../SkyBookerApp-Backend/README.md#testing) for full details.
+
