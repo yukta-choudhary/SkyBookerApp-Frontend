@@ -43,4 +43,7 @@ export class SeatService {
   deleteSeatsForFlight(flightId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/flight/${flightId}`);
   }
+  deleteSeatsForFlightByClass(flightId: string, seatClass: SeatClass): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/flight/${flightId}/class/${seatClass}`);
+  }
 }

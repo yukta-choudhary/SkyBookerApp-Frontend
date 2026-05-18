@@ -106,7 +106,7 @@ export class LoginComponent {
   }
 
   loginWithGoogle(): void {
-    window.location.href = `${environment.apiUrl}/oauth2/authorization/google`;
+    window.location.href = `${environment.authServiceUrl}/oauth2/authorization/google`;
   }
 
   goToForgotPassword(): void {

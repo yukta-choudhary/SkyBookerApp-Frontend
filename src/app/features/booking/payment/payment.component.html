@@ -17,6 +17,10 @@
           <div class="sum-row"><span>PNR</span><span class="pnr-v">{{ booking()!.pnrCode }}</span></div>
           <div class="sum-row"><span>Trip Type</span><span>{{ booking()!.tripType.replace('_',' ') }}</span></div>
           <div class="sum-row"><span>Base Fare</span><span>₹{{ booking()!.baseFare.toLocaleString('en-IN') }}</span></div>
+          <div class="sum-row"><span>Add-ons</span><span>₹{{ addOnTotal().toLocaleString('en-IN') }}</span></div>
+          @if (booking()!.mealPreference || booking()!.luggageKg) {
+            <div class="sum-row"><span>Selected Extras</span><span>{{ booking()!.mealPreference || 'No meal' }} · {{ booking()!.luggageKg ? booking()!.luggageKg + ' kg baggage' : 'No extra baggage' }}</span></div>
+          }
           <div class="sum-row"><span>Taxes &amp; Fees</span><span>₹{{ booking()!.taxes.toLocaleString('en-IN') }}</span></div>
           <div class="sum-row total-row"><span>Total Payable</span><span class="sum-total">₹{{ booking()!.totalFare.toLocaleString('en-IN') }}</span></div>
         </div>

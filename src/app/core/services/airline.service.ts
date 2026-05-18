@@ -63,4 +63,7 @@ export class AirlineService {
   updateAirport(id: string, payload: AirportCreateRequest): Observable<Airport> {
     return this.http.put<Airport>(`${this.airportUrl}/${id}`, payload);
   }
+  deleteAirport(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.airportUrl}/${id}`);
+  }
 }

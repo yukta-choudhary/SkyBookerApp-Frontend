@@ -14,46 +14,31 @@
           <p class="welcome-sub">Ready for your next adventure?</p>
         </div>
       </div>
-      <a routerLink="/flights/search" class="quick-search-btn">
+      <a routerLink="/home" class="quick-search-btn">
         <span class="material-symbols-rounded">search</span>
         Search Flights
       </a>
     </div>
 
-    <!-- Stats Row -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="material-symbols-rounded mat-icon-filled stat-icon purple">confirmation_number</span>
-        <div>
-          <span class="stat-val">{{ allBookings().length }}</span>
-          <span class="stat-label">Total Bookings</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <span class="material-symbols-rounded mat-icon-filled stat-icon green">check_circle</span>
-        <div>
-          <span class="stat-val">{{ confirmedCount }}</span>
-          <span class="stat-label">Confirmed</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <span class="material-symbols-rounded mat-icon-filled stat-icon coral">flight_takeoff</span>
-        <div>
-          <span class="stat-val">{{ upcomingBookings().length }}</span>
-          <span class="stat-label">Upcoming Trips</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <span class="material-symbols-rounded mat-icon-filled stat-icon grey">cancel</span>
-        <div>
-          <span class="stat-val">{{ cancelledCount }}</span>
-          <span class="stat-label">Cancelled</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Main Content Grid -->
     <div class="dashboard-grid">
+
+      <div class="stats-column">
+        <div class="stat-card">
+          <span class="material-symbols-rounded mat-icon-filled stat-icon purple">confirmation_number</span>
+          <div>
+            <span class="stat-val">{{ allBookings().length }}</span>
+            <span class="stat-label">Total Bookings</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="material-symbols-rounded mat-icon-filled stat-icon coral">flight_takeoff</span>
+          <div>
+            <span class="stat-val">{{ upcomingBookings().length }}</span>
+            <span class="stat-label">Upcoming Trips</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Upcoming Trips -->
       <section class="dash-section upcoming-section">
@@ -75,7 +60,7 @@
           <div class="empty-card">
             <span class="material-symbols-rounded empty-icon">flight</span>
             <p>No upcoming trips</p>
-            <a routerLink="/flights/search" class="link-btn">Book your first flight</a>
+            <a routerLink="/home" class="link-btn">Book your first flight</a>
           </div>
         }
 
@@ -115,68 +100,6 @@
           </div>
         }
       </section>
-
-      <!-- Right Column -->
-      <div class="right-col">
-
-        <!-- Quick Actions -->
-        <section class="dash-section quick-actions">
-          <h2>
-            <span class="material-symbols-rounded">grid_view</span>
-            Quick Actions
-          </h2>
-          <div class="actions-grid">
-            <a routerLink="/flights/search" class="action-tile purple">
-              <span class="material-symbols-rounded mat-icon-filled">search</span>
-              <span>Search Flights</span>
-            </a>
-            <a routerLink="/passenger/my-bookings" class="action-tile blue">
-              <span class="material-symbols-rounded mat-icon-filled">confirmation_number</span>
-              <span>My Bookings</span>
-            </a>
-            <a routerLink="/passenger/notifications" class="action-tile coral">
-              <span class="material-symbols-rounded mat-icon-filled">notifications</span>
-              <span>Notifications</span>
-            </a>
-            <a routerLink="/passenger/profile" class="action-tile dark">
-              <span class="material-symbols-rounded mat-icon-filled">person</span>
-              <span>My Profile</span>
-            </a>
-          </div>
-        </section>
-
-        <!-- Recent Notifications -->
-        <section class="dash-section">
-          <div class="section-header">
-            <h2>
-              <span class="material-symbols-rounded">notifications</span>
-              Notifications
-            </h2>
-            <a routerLink="/passenger/notifications" class="view-all-link">See all</a>
-          </div>
-
-          @if (recentNotifications().length === 0) {
-            <div class="empty-notif">
-              <span class="material-symbols-rounded">notifications_none</span>
-              <p>No new notifications</p>
-            </div>
-          }
-
-          @for (notif of recentNotifications(); track notif.notificationId) {
-            <div class="notif-item" [class.unread]="!notif.isRead">
-              <div class="notif-icon-wrap">
-                <span class="material-symbols-rounded notif-icon mat-icon-filled">{{ getNotifIcon(notif.type) }}</span>
-              </div>
-              <div class="notif-body">
-                <p class="notif-title">{{ notif.title }}</p>
-                <p class="notif-msg">{{ notif.message }}</p>
-                <span class="notif-time">{{ formatDate(notif.sentAt) }}</span>
-              </div>
-            </div>
-          }
-        </section>
-
-      </div>
     </div>
 
   </div>

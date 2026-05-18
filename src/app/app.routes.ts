@@ -125,8 +125,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/staff/dashboard/staff-dashboard.component').then(m => m.StaffDashboardComponent)
       },
       {
+        path: 'seat-config',
+        loadComponent: () => import('./features/staff/dashboard/staff-dashboard.component').then(m => m.StaffDashboardComponent)
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('./features/passenger/notifications/notifications.component').then(m => m.NotificationsComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/passenger/profile/profile.component').then(m => m.ProfileComponent)
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
@@ -156,6 +164,10 @@ export const routes: Routes = [
       {
         path: 'notifications',
         loadComponent: () => import('./features/passenger/notifications/notifications.component').then(m => m.NotificationsComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/passenger/profile/profile.component').then(m => m.ProfileComponent)
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

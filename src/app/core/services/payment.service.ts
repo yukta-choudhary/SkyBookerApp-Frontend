@@ -7,6 +7,7 @@ import {
   PaymentInitiateRequest,
   PaymentVerifyRequest,
   PaymentRefundRequest,
+  MonthlyRevenueResponse,
   RevenueResponse
 } from '../models/index';
 
@@ -35,5 +36,10 @@ export class PaymentService {
   }
   getRevenue(): Observable<RevenueResponse> {
     return this.http.get<RevenueResponse>(`${this.baseUrl}/admin/revenue`);
+  }
+  getMonthlyRevenue(year: number): Observable<MonthlyRevenueResponse> {
+    return this.http.get<MonthlyRevenueResponse>(`${this.baseUrl}/admin/revenue/monthly`, {
+      params: { year }
+    });
   }
 }

@@ -49,6 +49,8 @@ export class FlightSearchComponent implements OnInit {
 
   // Round trip tab
   activeTab = signal<'outbound' | 'return'>('outbound');
+  selectedOutbound = signal<Flight | null>(null);
+  selectedReturn = signal<Flight | null>(null);
 
   setFilterStatus(s: string): void { this.filterStatus.set(s as '' | FlightStatus); }
 
@@ -95,6 +97,9 @@ export class FlightSearchComponent implements OnInit {
         .subscribe(rt => {
           this.flights.set(rt.outboundFlights || []);
           this.returnFlights.set(rt.returnFlights || []);
+          this.selectedOutbound.set(null);
+          this.selectedReturn.set(null);
+          this.activeTab.set('outbound');
           this.loading.set(false);
           this.loadAirlineData();
         });
@@ -152,11 +157,51 @@ export class FlightSearchComponent implements OnInit {
       this.router.navigate(['/auth/login']);
       return;
     }
+    if (this.tripType === 'ROUND_TRIP') {
+      if (this.activeTab() === 'outbound') {
+        this.selectedOutbound.set(flight);
+        this.activeTab.set('return');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      this.selectedReturn.set(flight);
+      return;
+    }
     this.router.navigate(['/booking/seats', flight.flightId], {
       queryParams: {
         passengers: this.passengers,
         tripType: this.tripType,
-        basePrice: flight.basePrice
+        basePrice: flight.basePrice,
+        departureTime: flight.departureTime
+      }
+    });
+  }
+
+  isSelected(flight: Flight): boolean {
+    const selected = this.activeTab() === 'return' ? this.selectedReturn() : this.selectedOutbound();
+    return selected?.flightId === flight.flightId;
+  }
+
+  proceedRoundTrip(): void {
+    const outbound = this.selectedOutbound();
+    const returning = this.selectedReturn();
+    if (!outbound || !returning) {
+      this.activeTab.set(outbound ? 'return' : 'outbound');
+      return;
+    }
+    this.router.navigate(['/booking/seats', outbound.flightId], {
+      queryParams: {
+        passengers: this.passengers,
+        tripType: this.tripType,
+        basePrice: outbound.basePrice,
+        departureTime: outbound.departureTime,
+        returnFlightId: returning.flightId,
+        returnBasePrice: returning.basePrice,
+        returnDepartureTime: returning.departureTime,
+        outboundFlightNumber: outbound.flightNumber,
+        returnFlightNumber: returning.flightNumber,
+        outboundRoute: `${outbound.originAirportCode}-${outbound.destinationAirportCode}`,
+        returnRoute: `${returning.originAirportCode}-${returning.destinationAirportCode}`
       }
     });
   }

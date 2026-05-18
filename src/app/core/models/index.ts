@@ -8,7 +8,7 @@
 export type Role = 'PASSENGER' | 'AIRLINE_STAFF' | 'ADMIN';
 export type AuthProvider = 'LOCAL' | 'GOOGLE' | 'GITHUB';
 
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
 export type TripType = 'ONE_WAY' | 'ROUND_TRIP';
 
 export type FlightStatus = 'ON_TIME' | 'DELAYED' | 'CANCELLED' | 'DEPARTED' | 'ARRIVED';
@@ -134,7 +134,6 @@ export interface Airport {
 }
 
 export interface AirlineCreateRequest {
-  airlineId: string;
   name: string;
   iataCode: string;
   icaoCode: string;
@@ -145,7 +144,6 @@ export interface AirlineCreateRequest {
 }
 
 export interface AirportCreateRequest {
-  airportId: string;
   name: string;
   iataCode: string;
   icaoCode: string;
@@ -168,7 +166,6 @@ export interface Flight {
   arrivalTime: string;
   durationMinutes: number;
   status: FlightStatus;
-  aircraftType: string;
   totalSeats: number;
   availableSeats: number;
   basePrice: number;
@@ -187,7 +184,6 @@ export interface FlightCreateRequest {
   departureTime: string;
   arrivalTime: string;
   durationMinutes: number;
-  aircraftType: string;
   totalSeats: number;
   availableSeats: number;
   basePrice: number;
@@ -267,6 +263,8 @@ export interface BookingCreateRequest {
   baseFare: number;
   taxes: number;
   totalFare: number;
+  mealPreference?: string;
+  luggageKg?: number;
   contactEmail: string;
   contactPhone: string;
   departureTime: string;
@@ -387,6 +385,8 @@ export interface RevenueResponse {
   totalRevenue: number;
   currency: string;
 }
+
+export type MonthlyRevenueResponse = Record<string, number>;
 
 export interface BroadcastResponse {
   sent: number;

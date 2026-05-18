@@ -82,8 +82,14 @@
                 (input)="passwordTouched && validatePassword()"
                 [class.input-error]="passwordError()"
               />
-              <button type="button" class="toggle-btn" (click)="togglePassword()">
-                {{ showPassword ? 'Hide' : 'Show' }}
+              <button
+                type="button"
+                class="toggle-btn"
+                (click)="togglePassword()"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                [attr.title]="showPassword ? 'Hide password' : 'Show password'"
+              >
+                <span class="material-symbols-rounded">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
               </button>
             </div>
             @if (passwordError()) {

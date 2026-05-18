@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookingService } from '../../../core/services/booking.service';
-import { NotificationService } from '../../../core/services/notification.service';
-import { Booking, Notification } from '../../../core/models/index';
+import { Booking } from '../../../core/models/index';
 import { NavbarComponent } from '../../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../../shared/footer/footer.component';
 import { catchError, of } from 'rxjs';
@@ -19,12 +18,10 @@ import { catchError, of } from 'rxjs';
 export class PassengerDashboardComponent implements OnInit {
   readonly authService = inject(AuthService);
   private readonly bookingService = inject(BookingService);
-  private readonly notifService = inject(NotificationService);
 
   user = computed(() => this.authService.currentUser());
 
   upcomingBookings = signal<Booking[]>([]);
-  recentNotifications = signal<Notification[]>([]);
   allBookings = signal<Booking[]>([]);
 
   loading = signal(true);
@@ -44,9 +41,6 @@ export class PassengerDashboardComponent implements OnInit {
       this.loading.set(false);
     });
 
-    this.notifService.getUnreadNotifications(userId).pipe(catchError(() => of([]))).subscribe(n => {
-      this.recentNotifications.set(n.slice(0, 5));
-    });
   }
 
   private setGreeting(): void {
@@ -59,7 +53,7 @@ export class PassengerDashboardComponent implements OnInit {
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
       CONFIRMED: 'status-confirmed', PENDING: 'status-pending',
-      CANCELLED: 'status-cancelled', COMPLETED: 'status-completed', NO_SHOW: 'status-no-show'
+      CANCELLED: 'status-cancelled', COMPLETED: 'status-completed'
     };
     return map[status] || '';
   }
@@ -72,21 +66,4 @@ export class PassengerDashboardComponent implements OnInit {
     return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  getNotifIcon(type: string): string {
-    const map: Record<string, string> = {
-      BOOKING_CONFIRMED: 'check_circle', FLIGHT_DELAY: 'schedule',
-      GATE_CHANGE: 'door_front', CHECKIN_REMINDER: 'assignment_turned_in',
-      BOARDING_REMINDER: 'flight_takeoff', PAYMENT_SUCCESS: 'payments',
-      BOOKING_CANCELLED: 'cancel', GENERAL: 'notifications'
-    };
-    return map[type] || 'notifications';
-  }
-
-  get confirmedCount(): number {
-    return this.allBookings().filter(b => b.status === 'CONFIRMED').length;
-  }
-
-  get cancelledCount(): number {
-    return this.allBookings().filter(b => b.status === 'CANCELLED').length;
-  }
 }

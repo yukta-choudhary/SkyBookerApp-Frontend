@@ -63,14 +63,19 @@ import { catchError, of } from 'rxjs';
             </div>
 
             <!-- Change Password -->
-            <div class="password-card">
+            <div class="password-card" [class.password-card-disabled]="passwordChangeDisabled()" [attr.aria-disabled]="passwordChangeDisabled()">
               <h3>Change Password</h3>
-              <div class="form-group"><label>Current Password</label><input type="password" [(ngModel)]="pwForm.oldPassword" class="form-ctrl" /></div>
-              <div class="form-group"><label>New Password</label><input type="password" [(ngModel)]="pwForm.newPassword" class="form-ctrl" /></div>
-              <div class="form-group"><label>Confirm New Password</label><input type="password" [(ngModel)]="confirmNewPassword" class="form-ctrl" /></div>
+              @if (passwordChangeDisabled()) {
+                <div class="password-disabled-note">
+                  Password changes are unavailable for accounts signed in with {{ profile()!.provider }}.
+                </div>
+              }
+              <div class="form-group"><label>Current Password</label><input type="password" [(ngModel)]="pwForm.oldPassword" class="form-ctrl" [disabled]="passwordChangeDisabled()" /></div>
+              <div class="form-group"><label>New Password</label><input type="password" [(ngModel)]="pwForm.newPassword" class="form-ctrl" [disabled]="passwordChangeDisabled()" /></div>
+              <div class="form-group"><label>Confirm New Password</label><input type="password" [(ngModel)]="confirmNewPassword" class="form-ctrl" [disabled]="passwordChangeDisabled()" /></div>
               @if (pwSuccess()) { <div class="alert-success"><span class="material-symbols-rounded">check_circle</span> {{ pwSuccess() }}</div> }
               @if (pwError()) { <div class="alert-error">{{ pwError() }}</div> }
-              <button class="save-btn" [disabled]="pwLoading()" (click)="changePassword()">
+              <button class="save-btn" [disabled]="pwLoading() || passwordChangeDisabled()" (click)="changePassword()">
                 @if (pwLoading()) { <span class="btn-spinner"></span> Updating... }
                 @else { <span class="material-symbols-rounded">lock_reset</span> Update Password }
               </button>
@@ -96,11 +101,15 @@ import { catchError, of } from 'rxjs';
     .provider-badge { display: block; font-size: 11px; color: #9a92aa; margin-top: 6px; }
     .edit-card, .password-card { background: #fff; border-radius: 20px; border: 1px solid #ede9f6; padding: 24px; box-shadow: 0 2px 10px rgba(53,28,97,0.05); }
     .edit-card h3, .password-card h3 { font-size: 15px; font-weight: 700; color: #17141f; margin: 0 0 20px; }
+    .password-card-disabled { background: #f1f0f4; border-color: #d9d5e2; box-shadow: none; color: #81798d; }
+    .password-card-disabled h3, .password-card-disabled label { color: #746d7f; }
+    .password-disabled-note { padding: 10px 14px; border-radius: 10px; background: #e7e4eb; color: #655d70; border: 1px solid #d8d3df; font-size: 13px; margin-bottom: 14px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 13px; font-weight: 600; color: #282433; }
     .form-ctrl { height: 46px; padding: 0 14px; border-radius: 11px; border: 1.5px solid #e3dff0; background: #faf9fd; font-size: 14px; font-family: inherit; color: #17141f; outline: none; transition: all 0.18s; }
     .form-ctrl:focus { border-color: #7b5cff; box-shadow: 0 0 0 4px rgba(123,92,255,0.10); }
+    .form-ctrl:disabled { background: #e6e3ea; border-color: #d0cbd8; color: #8b8395; cursor: not-allowed; }
     .alert-success { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; background: rgba(34,197,94,0.09); color: #15803d; border: 1px solid rgba(34,197,94,0.18); font-size: 13px; margin-bottom: 14px; }
     .alert-success .material-symbols-rounded { font-size: 18px; }
     .alert-error { padding: 10px 14px; border-radius: 10px; background: rgba(255,76,76,0.08); color: #bc2d2d; border: 1px solid rgba(255,76,76,0.15); font-size: 13px; margin-bottom: 14px; }
@@ -134,6 +143,10 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  passwordChangeDisabled(): boolean {
+    return this.profile()?.provider !== 'LOCAL';
+  }
+
   saveProfile(): void {
     this.profileLoading.set(true); this.profileError.set(''); this.profileSuccess.set('');
     this.authService.updateProfile(this.editForm).pipe(catchError(err => { this.profileLoading.set(false); this.profileError.set(err?.error?.message || 'Failed to update.'); return of(null); })).subscribe(p => {
@@ -142,6 +155,7 @@ export class ProfileComponent implements OnInit {
   }
 
   changePassword(): void {
+    if (this.passwordChangeDisabled()) { return; }
     if (!this.pwForm.oldPassword || !this.pwForm.newPassword) { this.pwError.set('All password fields are required.'); return; }
     if (this.pwForm.newPassword !== this.confirmNewPassword) { this.pwError.set('New passwords do not match.'); return; }
     this.pwLoading.set(true); this.pwError.set(''); this.pwSuccess.set('');

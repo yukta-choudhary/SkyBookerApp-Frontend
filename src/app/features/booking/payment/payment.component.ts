@@ -71,11 +71,14 @@ export class PaymentComponent implements OnInit {
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature
-          }).pipe(catchError(() => of(null))).subscribe(verified => {
+          }).pipe(catchError(err => {
+            this.error.set(err?.error?.message || 'Payment verification failed. Please contact support.');
+            return of(null);
+          })).subscribe(verified => {
             this.payLoading.set(false);
             if (verified) {
               this.router.navigate(['/booking/confirmation', b.bookingId]);
-            } else {
+            } else if (!this.error()) {
               this.error.set('Payment verification failed. Please contact support.');
             }
           });
@@ -88,5 +91,11 @@ export class PaymentComponent implements OnInit {
       const rzp = new Razorpay(options);
       rzp.open();
     });
+  }
+
+  addOnTotal(): number {
+    const b = this.booking();
+    if (!b) return 0;
+    return Math.max(0, b.totalFare - b.baseFare - b.taxes);
   }
 }

@@ -38,6 +38,27 @@
       @if (loading()) {
         <div class="full-loading"><div class="spinner"></div></div>
       } @else {
+        <div class="revenue-chart-card">
+          <div class="chart-header">
+            <div>
+              <h2>Total Earnings 2026</h2>
+              <p>Paid booking revenue by month</p>
+            </div>
+            <span class="chart-total">₹{{ totalRevenue().toLocaleString('en-IN') }}</span>
+          </div>
+          <div class="revenue-bars">
+            @for (amount of monthlyRevenue(); track $index) {
+              <div class="bar-item">
+                <div class="bar-track">
+                  <div class="bar-fill" [style.height.%]="(amount / maxMonthlyRevenue) * 100"></div>
+                </div>
+                <span class="bar-value">₹{{ amount.toLocaleString('en-IN') }}</span>
+                <span class="bar-label">{{ monthLabels[$index] }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
         <!-- Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card revenue">
@@ -102,7 +123,6 @@
           </div>
         </div>
 
-
       }
     }
 
@@ -110,7 +130,7 @@
     @if (activeTab() === 'airlines') {
       <div class="tab-header">
         <h2>Airlines</h2>
-        <button class="btn-primary" (click)="showAirlineModal.set(true)">
+        <button class="btn-primary" (click)="openAddAirlineModal()">
           <span class="material-symbols-rounded">add</span>
           Add Airline
         </button>
@@ -150,14 +170,19 @@
                   </span>
                 </td>
                 <td>
-                  <button
-                    class="toggle-btn"
-                    [class.deactivate]="airline.isActive"
-                    [class.activate]="!airline.isActive"
-                    (click)="toggleAirline(airline)"
-                  >
-                    {{ airline.isActive ? 'Deactivate' : 'Activate' }}
-                  </button>
+                  <div class="action-group">
+                    <button class="icon-action-btn edit" type="button" title="Edit airline" (click)="openEditAirlineModal(airline)">
+                      <span class="material-symbols-rounded">edit</span>
+                    </button>
+                    <button
+                      class="toggle-btn"
+                      [class.deactivate]="airline.isActive"
+                      [class.activate]="!airline.isActive"
+                      (click)="toggleAirline(airline)"
+                    >
+                      {{ airline.isActive ? 'Deactivate' : 'Activate' }}
+                    </button>
+                  </div>
                 </td>
               </tr>
             }
@@ -170,7 +195,7 @@
     @if (activeTab() === 'airports') {
       <div class="tab-header">
         <h2>Airports</h2>
-        <button class="btn-primary" (click)="showAirportModal.set(true)">
+        <button class="btn-primary" (click)="openAddAirportModal()">
           <span class="material-symbols-rounded">add</span>
           Add Airport
         </button>
@@ -184,6 +209,7 @@
               <th>City</th>
               <th>Country</th>
               <th>Timezone</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -194,6 +220,16 @@
                 <td>{{ airport.city }}</td>
                 <td>{{ airport.country }}</td>
                 <td style="font-size:12px;color:#80798e">{{ airport.timezone }}</td>
+                <td>
+                  <div class="action-group">
+                    <button class="icon-action-btn edit" type="button" title="Edit airport" (click)="openEditAirportModal(airport)">
+                      <span class="material-symbols-rounded">edit</span>
+                    </button>
+                    <button class="icon-action-btn delete" type="button" title="Delete airport" (click)="deleteAirport(airport)">
+                      <span class="material-symbols-rounded">delete</span>
+                    </button>
+                  </div>
+                </td>
               </tr>
             }
           </tbody>
@@ -305,20 +341,16 @@
 
 <!-- Add Airline Modal -->
 @if (showAirlineModal()) {
-  <div class="modal-overlay" (click)="showAirlineModal.set(false)">
+  <div class="modal-overlay" (click)="closeAirlineModal()">
     <div class="modal-box wide" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Add New Airline</h3>
-        <button class="modal-close" (click)="showAirlineModal.set(false)">
+        <h3>{{ editingAirlineId() ? 'Edit Airline' : 'Add New Airline' }}</h3>
+        <button class="modal-close" (click)="closeAirlineModal()">
           <span class="material-symbols-rounded">close</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="form-two-col">
-          <div class="form-group">
-            <label class="form-label">Airline ID <span class="req">*</span></label>
-            <input type="text" [(ngModel)]="airlineForm.airlineId" placeholder="e.g. AI" class="form-ctrl" />
-          </div>
           <div class="form-group">
             <label class="form-label">Airline Name <span class="req">*</span></label>
             <input type="text" [(ngModel)]="airlineForm.name" placeholder="Air India" class="form-ctrl" />
@@ -353,10 +385,10 @@
         }
       </div>
       <div class="modal-footer">
-        <button class="btn-ghost" (click)="showAirlineModal.set(false)">Cancel</button>
+        <button class="btn-ghost" (click)="closeAirlineModal()">Cancel</button>
         <button class="btn-primary" (click)="saveAirline()" [disabled]="airlineFormLoading()">
           @if (airlineFormLoading()) { <span class="btn-spinner"></span> Saving... }
-          @else { <span class="material-symbols-rounded">save</span> Save Airline }
+          @else { <span class="material-symbols-rounded">save</span> {{ editingAirlineId() ? 'Update Airline' : 'Save Airline' }} }
         </button>
       </div>
     </div>
@@ -365,20 +397,16 @@
 
 <!-- Add Airport Modal -->
 @if (showAirportModal()) {
-  <div class="modal-overlay" (click)="showAirportModal.set(false)">
+  <div class="modal-overlay" (click)="closeAirportModal()">
     <div class="modal-box wide" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Add New Airport</h3>
-        <button class="modal-close" (click)="showAirportModal.set(false)">
+        <h3>{{ editingAirportId() ? 'Edit Airport' : 'Add New Airport' }}</h3>
+        <button class="modal-close" (click)="closeAirportModal()">
           <span class="material-symbols-rounded">close</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="form-two-col">
-          <div class="form-group">
-            <label class="form-label">Airport ID <span class="req">*</span></label>
-            <input type="text" [(ngModel)]="airportForm.airportId" placeholder="e.g. UUID" class="form-ctrl" />
-          </div>
           <div class="form-group">
             <label class="form-label">Airport Name <span class="req">*</span></label>
             <input type="text" [(ngModel)]="airportForm.name" placeholder="Indira Gandhi Intl" class="form-ctrl" />
@@ -417,10 +445,10 @@
         }
       </div>
       <div class="modal-footer">
-        <button class="btn-ghost" (click)="showAirportModal.set(false)">Cancel</button>
+        <button class="btn-ghost" (click)="closeAirportModal()">Cancel</button>
         <button class="btn-primary" (click)="saveAirport()" [disabled]="airportFormLoading()">
           @if (airportFormLoading()) { <span class="btn-spinner"></span> Saving... }
-          @else { <span class="material-symbols-rounded">save</span> Save Airport }
+          @else { <span class="material-symbols-rounded">save</span> {{ editingAirportId() ? 'Update Airport' : 'Save Airport' }} }
         </button>
       </div>
     </div>

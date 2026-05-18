@@ -9,12 +9,180 @@
         <h1>Staff Dashboard</h1>
         <p>Manage your flights, update statuses and view passenger manifests</p>
       </div>
+      @if (!isSeatConfigRoute()) {
       <button class="btn-primary" (click)="openAddFlightModal()">
         <span class="material-symbols-rounded">add</span>
         Add Flight
       </button>
+      } @else {
+      <a routerLink="/staff/flights" class="btn-ghost">
+        <span class="material-symbols-rounded">arrow_back</span>
+        Back to Flights
+      </a>
+      }
     </div>
 
+    @if (isSeatConfigRoute() && !seatConfigFlightId()) {
+    <section class="dash-section seat-config-empty">
+      <span class="material-symbols-rounded">airline_seat_recline_normal</span>
+      <h2>You haven't selected a flight yet.</h2>
+      <p>Please go to My Flights and click the seat config icon for a specific flight to configure its seats.</p>
+      <a routerLink="/staff/flights" class="btn-primary">
+        <span class="material-symbols-rounded">flight</span>
+        Go to My Flights
+      </a>
+    </section>
+    } @else if (seatConfigFlightId()) {
+    <section class="dash-section seat-config-section">
+      <div class="section-header seat-config-header">
+        <h2>
+          <span class="material-symbols-rounded">airline_seat_recline_normal</span>
+          Seat Configuration
+        </h2>
+        @if (seatConfigFlight()) {
+        <span class="flight-badge">
+          {{ seatConfigFlight()!.flightNumber }} &middot; {{ seatConfigFlight()!.originAirportCode }} &rarr; {{ seatConfigFlight()!.destinationAirportCode }}
+        </span>
+        }
+      </div>
+
+      @if (seatConfigLoading()) {
+      <div class="section-loading">
+        <div class="spinner"></div>
+      </div>
+      }
+
+      @if (!seatConfigLoading()) {
+      <div class="seat-config-grid">
+        <div class="seat-config-panel">
+          <div class="panel-title-row">
+            <h3>{{ editingSeatClass() ? 'Edit Seat Config' : 'Generate Seats' }}</h3>
+            @if (editingSeatClass()) {
+            <span class="edit-chip">{{ editingSeatClass() }}</span>
+            }
+          </div>
+          <div class="form-two-col">
+            <div class="form-group">
+              <label class="modal-label">Start Row</label>
+              <input type="number" min="1" [(ngModel)]="seatConfigForm.startRow" class="modal-select" />
+            </div>
+            <div class="form-group">
+              <label class="modal-label">Number of Rows</label>
+              <input type="number" min="1" [(ngModel)]="seatConfigForm.rows" class="modal-select" />
+            </div>
+            <div class="form-group">
+              <label class="modal-label">Columns</label>
+              <input type="text" [(ngModel)]="seatConfigForm.columns" class="modal-select" placeholder="A,B,C,D,E,F" />
+            </div>
+            <div class="form-group">
+              <label class="modal-label">Seat Class</label>
+              <select [(ngModel)]="seatConfigForm.seatClass" class="modal-select">
+                @for (seatClass of seatClasses; track seatClass) {
+                <option [value]="seatClass">{{ seatClass }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="modal-label">Price Multiplier</label>
+              <input type="number" min="0.1" step="0.1" [(ngModel)]="seatConfigForm.priceMultiplier" class="modal-select" />
+            </div>
+            <div class="form-group">
+              <label class="modal-label">Extra Legroom Rows</label>
+              <input type="text" [(ngModel)]="seatConfigForm.extraLegroomRows" class="modal-select" placeholder="1,12,13" />
+            </div>
+          </div>
+          <div class="seat-config-actions">
+            <button class="btn-primary" (click)="generateSeatConfig()" [disabled]="seatConfigSaving()">
+              <span class="material-symbols-rounded">{{ editingSeatClass() ? 'save' : 'add' }}</span>
+              {{ editingSeatClass() ? 'Save Config' : 'Generate Seats' }}
+            </button>
+            @if (editingSeatClass()) {
+            <button class="btn-ghost" (click)="cancelEditSeatConfig()" [disabled]="seatConfigSaving()">
+              Cancel Edit
+            </button>
+            }
+            <button class="btn-ghost danger" (click)="deleteSeatConfig()" [disabled]="seatConfigSaving() || seatMap().length === 0">
+              <span class="material-symbols-rounded">delete</span>
+              Clear Seats
+            </button>
+          </div>
+          @if (seatConfigError()) {
+          <div class="modal-error">{{ seatConfigError() }}</div>
+          }
+          @if (seatConfigSuccess()) {
+          <div class="modal-success">{{ seatConfigSuccess() }}</div>
+          }
+        </div>
+
+        <div class="seat-config-panel">
+          <h3>Seat Summary</h3>
+          <div class="seat-summary-grid">
+            <div class="seat-summary-card"><strong>{{ seatMap().length }}</strong><span>Total</span></div>
+            <div class="seat-summary-card available"><strong>{{ seatCount('AVAILABLE') }}</strong><span>Available</span></div>
+            <div class="seat-summary-card held"><strong>{{ seatCount('HELD') }}</strong><span>Held</span></div>
+            <div class="seat-summary-card blocked"><strong>{{ seatCount('BLOCKED') }}</strong><span>Blocked</span></div>
+          </div>
+          @if (seatConfigFlight() && configuredSeatDifference() !== 0) {
+          <div class="seat-total-warning">
+            {{ seatMap().length }}/{{ seatConfigFlight()!.totalSeats }} configured.
+            @if (configuredSeatDifference() > 0) {
+            Remove {{ configuredSeatDifference() }} seats to match this flight.
+            } @else {
+            Add {{ -configuredSeatDifference() }} seats to match this flight.
+            }
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="seat-toolbar">
+        <div class="class-tabs">
+          <button type="button" class="class-tab" [class.active]="seatClassFilter() === 'ALL'" (click)="seatClassFilter.set('ALL')">All</button>
+          @for (seatClass of seatClasses; track seatClass) {
+          <button type="button" class="class-tab" [class.active]="seatClassFilter() === seatClass" (click)="seatClassFilter.set(seatClass)">{{ seatClass }}</button>
+          }
+        </div>
+        <button type="button" class="btn-ghost" (click)="loadSeatConfig()">
+          <span class="material-symbols-rounded">refresh</span>
+          Refresh
+        </button>
+        <button type="button" class="btn-ghost" (click)="startEditSeatConfig()" [disabled]="seatClassFilter() === 'ALL' || seatConfigSaving()">
+          <span class="material-symbols-rounded">edit</span>
+          Edit Config
+        </button>
+        <button type="button" class="btn-ghost danger" (click)="deleteSeatsForSelectedClass()" [disabled]="seatClassFilter() === 'ALL' || seatConfigSaving()">
+          <span class="material-symbols-rounded">delete</span>
+          Delete Class Seats
+        </button>
+      </div>
+
+      @if (seatMap().length === 0) {
+      <div class="empty-table">
+        <span class="material-symbols-rounded">airline_seat_recline_normal</span>
+        <p>No seats configured for this flight yet. Generate seats above to make this tab usable.</p>
+      </div>
+      } @else {
+      <div class="seat-map-wrap">
+        <div class="staff-seat-grid">
+          @for (seat of filteredSeatMap(); track seat.seatId) {
+          <div class="staff-seat-card" [ngClass]="seat.status.toLowerCase()">
+            <div>
+              <strong>{{ seat.seatNumber }}</strong>
+              <span>{{ seat.seatClass }} &middot; {{ seat.priceMultiplier }}x</span>
+            </div>
+            <select class="seat-status-select" [ngModel]="seat.status" (ngModelChange)="updateSeatStatus(seat, $event)">
+              @for (status of seatStatuses; track status) {
+              <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </div>
+          }
+        </div>
+      </div>
+      }
+      }
+    </section>
+    } @else {
     <!-- Airline Selector -->
     <div class="airline-selector-card">
       <label class="selector-label">
@@ -24,7 +192,7 @@
       <select class="airline-select" [(ngModel)]="selectedAirlineId" (ngModelChange)="loadFlightsByAirline($event)">
         <option value="">— Choose Airline —</option>
         @for (airline of airlines(); track airline.airlineId) {
-          <option [value]="airline.airlineId">{{ airline.name }} ({{ airline.iataCode }})</option>
+        <option [value]="airline.airlineId">{{ airline.name }} ({{ airline.iataCode }})</option>
         }
       </select>
     </div>
@@ -43,67 +211,78 @@
         </div>
 
         @if (loading()) {
-          <div class="section-loading"><div class="spinner"></div></div>
+        <div class="section-loading">
+          <div class="spinner"></div>
+        </div>
         }
 
         @if (!loading() && flights().length === 0) {
-          <div class="empty-table">
-            <span class="material-symbols-rounded">flight_off</span>
-            <p>No flights loaded. Select an airline above.</p>
-          </div>
+        <div class="empty-table">
+          <span class="material-symbols-rounded">flight_off</span>
+          <p>No flights loaded. Select an airline above.</p>
+        </div>
         }
 
         @if (!loading() && flights().length > 0) {
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Flight</th>
-                  <th>Route</th>
-                  <th>Departure</th>
-                  <th>Arrival</th>
-                  <th>Status</th>
-                  <th>Seats</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (flight of flights(); track flight.flightId) {
-                  <tr [class.selected]="selectedFlight()?.flightId === flight.flightId">
-                    <td><span class="fw-bold">{{ flight.flightNumber }}</span></td>
-                    <td>
-                      <span class="route-cell">
-                        {{ flight.originAirportCode }}
-                        <span class="material-symbols-rounded" style="font-size:14px">arrow_forward</span>
-                        {{ flight.destinationAirportCode }}
-                      </span>
-                    </td>
-                    <td>{{ formatDate(flight.departureTime) }}<br /><small>{{ formatTime(flight.departureTime) }}</small></td>
-                    <td>{{ formatDate(flight.arrivalTime) }}<br /><small>{{ formatTime(flight.arrivalTime) }}</small></td>
-                    <td>
-                      <span class="status-pill" [ngClass]="getStatusClass(flight.status)">
-                        {{ flight.status.replace('_', ' ') }}
-                      </span>
-                    </td>
-                    <td><span class="seats-val" [class.low]="flight.availableSeats < 10">{{ flight.availableSeats }}/{{ flight.totalSeats }}</span></td>
-                    <td>
-                      <div class="action-btns">
-                        <button class="act-btn view" (click)="selectFlight(flight)" title="View Manifest">
-                          <span class="material-symbols-rounded">people</span>
-                        </button>
-                        <button class="act-btn edit" (click)="openStatusModal(flight)" title="Update Status">
-                          <span class="material-symbols-rounded">edit</span>
-                        </button>
-                        <a [routerLink]="['/staff/seat-config', flight.flightId]" class="act-btn config" title="Seat Config">
-                          <span class="material-symbols-rounded">airline_seat_recline_normal</span>
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Flight</th>
+                <th>Route</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Status</th>
+                <th>Seats</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (flight of flights(); track flight.flightId) {
+              <tr [class.selected]="selectedFlight()?.flightId === flight.flightId">
+                <td><span class="fw-bold">{{ flight.flightNumber }}</span></td>
+                <td>
+                  <span class="route-cell">
+                    {{ flight.originAirportCode }}
+                    <span class="material-symbols-rounded" style="font-size:14px">arrow_forward</span>
+                    {{ flight.destinationAirportCode }}
+                  </span>
+                </td>
+                <td>{{ formatDate(flight.departureTime) }}<br /><small>{{ formatTime(flight.departureTime) }}</small>
+                </td>
+                <td>{{ formatDate(flight.arrivalTime) }}<br /><small>{{ formatTime(flight.arrivalTime) }}</small></td>
+                <td>
+                  <span class="status-pill" [ngClass]="getStatusClass(flight.status)">
+                    {{ flight.status.replace('_', ' ') }}
+                  </span>
+                </td>
+                <td><span class="seats-val" [class.low]="flight.availableSeats < 10">{{ flight.availableSeats }}/{{
+                    flight.totalSeats }}</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="act-btn view" (click)="selectFlight(flight)" title="View Manifest">
+                      <span class="material-symbols-rounded">people</span>
+                    </button>
+                    <button class="act-btn details" (click)="openEditFlightModal(flight)" title="Edit Flight">
+                      <span class="material-symbols-rounded">edit</span>
+                    </button>
+                    <button class="act-btn edit" (click)="openStatusModal(flight)" title="Update Status">
+                      <span class="material-symbols-rounded">published_with_changes</span>
+                    </button>
+                    <a [routerLink]="['/staff/seat-config', flight.flightId]" class="act-btn config"
+                      title="Seat Config">
+                      <span class="material-symbols-rounded">airline_seat_recline_normal</span>
+                    </a>
+                    <button class="act-btn delete" (click)="deleteFlight(flight)" title="Delete Flight">
+                      <span class="material-symbols-rounded">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         }
       </section>
 
@@ -115,172 +294,183 @@
             Passenger Manifest
           </h2>
           @if (selectedFlight()) {
-            <span class="flight-badge">{{ selectedFlight()!.flightNumber }}</span>
+          <span class="flight-badge">{{ selectedFlight()!.flightNumber }}</span>
           }
         </div>
 
         @if (!selectedFlight()) {
-          <div class="empty-table">
-            <span class="material-symbols-rounded">touch_app</span>
-            <p>Select a flight to view its passenger manifest</p>
-          </div>
+        <div class="empty-table">
+          <span class="material-symbols-rounded">touch_app</span>
+          <p>Select a flight to view its passenger manifest</p>
+        </div>
         }
 
         @if (selectedFlight() && bookingsLoading()) {
-          <div class="section-loading"><div class="spinner"></div></div>
+        <div class="section-loading">
+          <div class="spinner"></div>
+        </div>
         }
 
         @if (selectedFlight() && !bookingsLoading() && flightBookings().length === 0) {
-          <div class="empty-table">
-            <span class="material-symbols-rounded">person_off</span>
-            <p>No bookings found for this flight</p>
-          </div>
+        <div class="empty-table">
+          <span class="material-symbols-rounded">person_off</span>
+          <p>No bookings found for this flight</p>
+        </div>
         }
 
         @if (selectedFlight() && !bookingsLoading() && flightBookings().length > 0) {
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>PNR</th>
-                  <th>Contact</th>
-                  <th>Fare</th>
-                  <th>Status</th>
-                  <th>Booked</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (booking of flightBookings(); track booking.bookingId) {
-                  <tr>
-                    <td><span class="pnr-code">{{ booking.pnrCode }}</span></td>
-                    <td>
-                      <span style="font-size:12px">{{ booking.contactEmail }}</span><br />
-                      <small style="color:#80798e">{{ booking.contactPhone }}</small>
-                    </td>
-                    <td><span class="fw-bold">₹{{ booking.totalFare.toLocaleString('en-IN') }}</span></td>
-                    <td>
-                      <span class="booking-status" [ngClass]="getBookingStatusClass(booking.status)">{{ booking.status }}</span>
-                    </td>
-                    <td style="font-size:12px;color:#80798e">{{ formatDate(booking.bookedAt) }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>PNR</th>
+                <th>Contact</th>
+                <th>Fare</th>
+                <th>Status</th>
+                <th>Booked</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (booking of flightBookings(); track booking.bookingId) {
+              <tr>
+                <td><span class="pnr-code">{{ booking.pnrCode }}</span></td>
+                <td>
+                  <span style="font-size:12px">{{ booking.contactEmail }}</span><br />
+                  <small style="color:#80798e">{{ booking.contactPhone }}</small>
+                </td>
+                <td><span class="fw-bold">₹{{ booking.totalFare.toLocaleString('en-IN') }}</span></td>
+                <td>
+                  <span class="booking-status" [ngClass]="getBookingStatusClass(booking.status)">{{ booking.status
+                    }}</span>
+                </td>
+                <td style="font-size:12px;color:#80798e">{{ formatDate(booking.bookedAt) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         }
       </section>
 
     </div>
+    }
 
   </div>
 </main>
 
 <!-- Status Update Modal -->
 @if (showStatusModal()) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Update Flight Status</h3>
-        <button class="modal-close" (click)="closeModal()">
-          <span class="material-symbols-rounded">close</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-sub">Flight: <strong>{{ selectedFlight()?.flightNumber }}</strong></p>
-        <label class="modal-label">New Status</label>
-        <select class="modal-select" [(ngModel)]="updateStatusValStr" (ngModelChange)="updateStatusVal.set($event)">
-          @for (s of statuses; track s) {
-            <option [value]="s">{{ s.replace('_', ' ') }}</option>
-          }
-        </select>
-        @if (statusUpdateError()) {
-          <div class="modal-error">{{ statusUpdateError() }}</div>
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Update Flight Status</h3>
+      <button class="modal-close" (click)="closeModal()">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-sub">Flight: <strong>{{ selectedFlight()?.flightNumber }}</strong></p>
+      <label class="modal-label">New Status</label>
+      <select class="modal-select" [(ngModel)]="updateStatusValStr" (ngModelChange)="updateStatusVal.set($event)">
+        @for (s of statuses; track s) {
+        <option [value]="s">{{ s.replace('_', ' ') }}</option>
         }
-        @if (statusUpdateSuccess()) {
-          <div class="modal-success">{{ statusUpdateSuccess() }}</div>
-        }
-      </div>
-      <div class="modal-footer">
-        <button class="btn-ghost" (click)="closeModal()">Cancel</button>
-        <button class="btn-primary" (click)="updateFlightStatus()">Update Status</button>
-      </div>
+      </select>
+      @if (statusUpdateError()) {
+      <div class="modal-error">{{ statusUpdateError() }}</div>
+      }
+      @if (statusUpdateSuccess()) {
+      <div class="modal-success">{{ statusUpdateSuccess() }}</div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeModal()">Cancel</button>
+      <button class="btn-primary" (click)="updateFlightStatus()">Update Status</button>
     </div>
   </div>
+</div>
 }
 
 <app-footer></app-footer>
 
+@if (statusToast()) {
+<div class="status-toast" role="status" aria-live="polite">
+  <span class="material-symbols-rounded mat-icon-filled">check_circle</span>
+  <span>{{ statusToast() }}</span>
+</div>
+}
+
 <!-- Add Flight Modal -->
 @if (showAddFlightModal()) {
-  <div class="modal-overlay" (click)="showAddFlightModal.set(false)">
-    <div class="modal-box wide" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Add New Flight</h3>
-        <button class="modal-close" (click)="showAddFlightModal.set(false)">
-          <span class="material-symbols-rounded">close</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-two-col">
-          <div class="form-group">
-            <label class="modal-label">Flight Number <span class="req">*</span></label>
-            <input type="text" [(ngModel)]="flightForm.flightNumber" placeholder="e.g. AI-202" class="modal-select" />
-          </div>
-          <div class="form-group">
-            <label class="modal-label">Airline <span class="req">*</span></label>
-            <select [(ngModel)]="flightForm.airlineId" class="modal-select">
-              <option value="">— Select Airline —</option>
-              @for (airline of airlines(); track airline.airlineId) {
-                <option [value]="airline.airlineId">{{ airline.name }} ({{ airline.iataCode }})</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="modal-label">Origin Airport <span class="req">*</span></label>
-            <select [(ngModel)]="flightForm.originAirportCode" class="modal-select">
-              <option value="">— Select Origin —</option>
-              @for (airport of airports(); track airport.airportId) {
-                <option [value]="airport.iataCode">{{ airport.city }} ({{ airport.iataCode }})</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="modal-label">Destination Airport <span class="req">*</span></label>
-            <select [(ngModel)]="flightForm.destinationAirportCode" class="modal-select">
-              <option value="">— Select Destination —</option>
-              @for (airport of airports(); track airport.airportId) {
-                <option [value]="airport.iataCode">{{ airport.city }} ({{ airport.iataCode }})</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="modal-label">Departure Time <span class="req">*</span></label>
-            <input type="datetime-local" [(ngModel)]="flightForm.departureTime" class="modal-select" />
-          </div>
-          <div class="form-group">
-            <label class="modal-label">Arrival Time <span class="req">*</span></label>
-            <input type="datetime-local" [(ngModel)]="flightForm.arrivalTime" class="modal-select" />
-          </div>
-          <div class="form-group">
-            <label class="modal-label">Base Price (₹)</label>
-            <input type="number" [(ngModel)]="flightForm.basePrice" placeholder="4500" class="modal-select" />
-          </div>
-          <div class="form-group">
-            <label class="modal-label">Total Seats</label>
-            <input type="number" [(ngModel)]="flightForm.totalSeats" placeholder="180" class="modal-select" />
-          </div>
+<div class="modal-overlay" (click)="closeFlightModal()">
+  <div class="modal-box wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingFlightId() ? 'Edit Flight' : 'Add New Flight' }}</h3>
+      <button class="modal-close" (click)="closeFlightModal()">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-two-col">
+        <div class="form-group">
+          <label class="modal-label">Flight Number <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="flightForm.flightNumber" placeholder="e.g. AI-202" class="modal-select" />
         </div>
-        @if (addFlightError()) {
-          <div class="modal-error">{{ addFlightError() }}</div>
-        }
+        <div class="form-group">
+          <label class="modal-label">Airline <span class="req">*</span></label>
+          <select [(ngModel)]="flightForm.airlineId" class="modal-select">
+            <option value="">— Select Airline —</option>
+            @for (airline of airlines(); track airline.airlineId) {
+            <option [value]="airline.airlineId">{{ airline.name }} ({{ airline.iataCode }})</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="modal-label">Origin Airport <span class="req">*</span></label>
+          <select [(ngModel)]="flightForm.originAirportCode" (ngModelChange)="onOriginAirportChange($event)" class="modal-select">
+            <option value="">— Select Origin —</option>
+            @for (airport of airports(); track airport.airportId) {
+            <option [value]="airport.iataCode">{{ airport.city }} ({{ airport.iataCode }})</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="modal-label">Destination Airport <span class="req">*</span></label>
+          <select [(ngModel)]="flightForm.destinationAirportCode" class="modal-select">
+            <option value="">— Select Destination —</option>
+            @for (airport of airports(); track airport.airportId) {
+            <option [value]="airport.iataCode" [disabled]="airport.iataCode === flightForm.originAirportCode">{{ airport.city }} ({{ airport.iataCode }})</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="modal-label">Departure Time <span class="req">*</span></label>
+          <input type="datetime-local" [(ngModel)]="flightForm.departureTime" class="modal-select" />
+        </div>
+        <div class="form-group">
+          <label class="modal-label">Arrival Time <span class="req">*</span></label>
+          <input type="datetime-local" [(ngModel)]="flightForm.arrivalTime" class="modal-select" />
+        </div>
+        <div class="form-group">
+          <label class="modal-label">Base Price (₹)</label>
+          <input type="number" [(ngModel)]="flightForm.basePrice" placeholder="4500" class="modal-select" />
+        </div>
+        <div class="form-group">
+          <label class="modal-label">Total Seats</label>
+          <input type="number" [(ngModel)]="flightForm.totalSeats" placeholder="180" class="modal-select" />
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-ghost" (click)="showAddFlightModal.set(false)">Cancel</button>
-        <button class="btn-primary" (click)="addFlight()" [disabled]="addFlightLoading()">
-          @if (addFlightLoading()) { <span class="btn-spinner"></span> Adding... }
-          @else { <span class="material-symbols-rounded">save</span> Add Flight }
-        </button>
-      </div>
+      @if (addFlightError()) {
+      <div class="modal-error">{{ addFlightError() }}</div>
+      }
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeFlightModal()">Cancel</button>
+      <button class="btn-primary" (click)="saveFlight()" [disabled]="addFlightLoading()">
+        @if (addFlightLoading()) { <span class="btn-spinner"></span> Saving... }
+        @else { <span class="material-symbols-rounded">save</span> {{ editingFlightId() ? 'Update Flight' : 'Add Flight' }} }
+      </button>
     </div>
   </div>
+</div>
 }

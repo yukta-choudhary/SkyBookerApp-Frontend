@@ -81,6 +81,7 @@ export class NotificationsComponent implements OnInit {
     if (!uid) return;
     this.notifService.getNotifications(uid).pipe(catchError(() => of([]))).subscribe(n => {
       this.notifications.set(n);
+      this.notifService.setUnreadCount(n.filter(item => !item.isRead).length);
       this.loading.set(false);
     });
   }
@@ -90,6 +91,7 @@ export class NotificationsComponent implements OnInit {
     this.notifService.markAsRead(n.notificationId).pipe(catchError(() => of(null))).subscribe(updated => {
       if (updated) {
         this.notifications.update(list => list.map(x => x.notificationId === updated.notificationId ? updated : x));
+        this.notifService.decrementUnreadCount();
       }
     });
   }
@@ -99,6 +101,7 @@ export class NotificationsComponent implements OnInit {
     if (!uid) return;
     this.notifService.markAllAsRead(uid).pipe(catchError(() => of(null))).subscribe(() => {
       this.notifications.update(list => list.map(n => ({ ...n, isRead: true })));
+      this.notifService.setUnreadCount(0);
     });
   }
 

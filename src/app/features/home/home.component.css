@@ -291,10 +291,12 @@
   background: #fff;
   border-radius: 16px;
   border: 1.5px solid #e3dff0;
-  box-shadow: 0 16px 40px rgba(53,28,97,0.14);
+  box-shadow: 0 18px 44px rgba(53,28,97,0.16), 0 4px 12px rgba(91,56,255,0.08);
   z-index: 1000;
   max-height: 280px;
   overflow-y: auto;
+  transform-origin: top center;
+  animation: dropdownPop 0.18s ease;
 }
 
 .airport-option {
@@ -306,12 +308,15 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
   font-family: inherit;
   text-align: left;
 }
 
-.airport-option:hover { background: #f4f2fa; }
+.airport-option:hover {
+  background: linear-gradient(90deg, rgba(91,56,255,0.08), rgba(255,143,115,0.05));
+  transform: translateX(2px);
+}
 
 .airport-option .material-symbols-rounded { font-size: 18px; color: #5b38ff; flex-shrink: 0; }
 
@@ -373,9 +378,11 @@
   background: #fff;
   border-radius: 16px;
   border: 1.5px solid #e3dff0;
-  box-shadow: 0 16px 40px rgba(53,28,97,0.14);
+  box-shadow: 0 18px 44px rgba(53,28,97,0.16), 0 4px 12px rgba(91,56,255,0.08);
   padding: 20px;
   z-index: 1000;
+  transform-origin: top center;
+  animation: dropdownPop 0.18s ease;
 }
 
 .passenger-row {
@@ -461,8 +468,14 @@
   cursor: pointer;
   font-family: inherit;
   flex-shrink: 0;
+  min-width: 150px;
   box-shadow: 0 8px 24px rgba(91,56,255,0.30);
   transition: all 0.2s ease;
+}
+
+.search-row.round-trip .search-btn {
+  flex: 1 0 220px;
+  min-width: 220px;
 }
 
 .search-btn:hover {
@@ -559,6 +572,11 @@
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dropdownPop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .animate-slide-down { animation: slideDown 0.22s ease; }

@@ -196,17 +196,31 @@
 .has-error label { color: #bc2d2d; }
 
 .password-wrap { position: relative; }
-.password-wrap input { padding-right: 72px; }
+.password-wrap input { padding-right: 52px; }
 
 .toggle-btn {
   position: absolute;
-  top: 50%; right: 12px;
+  top: 50%; right: 10px;
   transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none; background: transparent;
   color: #6a54db;
-  font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit;
-  padding: 4px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.toggle-btn:hover {
+  background: rgba(106,84,219,0.10);
+}
+
+.toggle-btn .material-symbols-rounded {
+  font-size: 21px;
+  line-height: 1;
 }
 
 /* ---- Options Row ---- */

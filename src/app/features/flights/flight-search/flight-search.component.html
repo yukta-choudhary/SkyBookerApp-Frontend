@@ -32,6 +32,7 @@
         <button
           class="rt-tab"
           [class.active]="activeTab() === 'outbound'"
+          [class.completed]="selectedOutbound()"
           (click)="activeTab.set('outbound')"
           type="button"
         >
@@ -42,6 +43,7 @@
         <button
           class="rt-tab"
           [class.active]="activeTab() === 'return'"
+          [class.completed]="selectedReturn()"
           (click)="activeTab.set('return')"
           type="button"
         >
@@ -199,7 +201,6 @@
                   <span class="material-symbols-rounded" style="font-size:14px">airline_seat_recline_normal</span>
                   {{ flight.availableSeats }} seats
                 </span>
-                <span class="aircraft-type">{{ flight.aircraftType }}</span>
               </div>
 
               <!-- Price + CTA -->
@@ -211,6 +212,7 @@
                 </div>
                 <button
                   class="select-btn"
+                  [class.selected]="isSelected(flight)"
                   type="button"
                   (click)="selectFlight(flight)"
                   [disabled]="flight.availableSeats === 0 || flight.status === 'CANCELLED'"
@@ -220,8 +222,13 @@
                   } @else if (flight.status === 'CANCELLED') {
                     Cancelled
                   } @else {
-                    Select
-                    <span class="material-symbols-rounded">arrow_forward</span>
+                    @if (isSelected(flight)) {
+                      Selected
+                      <span class="material-symbols-rounded">check</span>
+                    } @else {
+                      Select
+                      <span class="material-symbols-rounded">arrow_forward</span>
+                    }
                   }
                 </button>
               </div>
@@ -233,6 +240,18 @@
 
       </section>
     </div>
+    @if (tripType === 'ROUND_TRIP') {
+      <div class="round-trip-bar">
+        <div>
+          <span [class.ready]="selectedOutbound()">{{ origin }} â†’ {{ destination }}</span>
+          <span [class.ready]="selectedReturn()">{{ destination }} â†’ {{ origin }}</span>
+        </div>
+        <button type="button" class="round-next" [disabled]="!selectedOutbound() || !selectedReturn()" (click)="proceedRoundTrip()">
+          Next
+          <span class="material-symbols-rounded">arrow_forward</span>
+        </button>
+      </div>
+    }
   </div>
 </main>
 
